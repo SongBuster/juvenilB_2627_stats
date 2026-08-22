@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Análisis J? · Agustinos vs Cadete</title>
+<style>
+:root {
+  --navy:#0d1b2a; --navy2:#162032; --card:#1a2740; --card2:#1f2e4a;
+  --gold:#f0a500; --gold2:#ffc740; --green:#2ecc71; --red:#e74c3c;
+  --blue:#3a8fd1; --text:#e8edf5; --muted:#8899b0;
+  --border:rgba(240,165,0,0.18); --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--navy);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}
+body{max-width:480px;margin:0 auto;padding:0 0 32px}
+
+.header{background:linear-gradient(160deg,#0a1520 0%,#162032 60%,#0d1b2a 100%);
+  padding:28px 20px 24px;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 80% 50%,rgba(240,165,0,.07) 0%,transparent 65%);pointer-events:none}
+.jornada-label{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.match-title{font-size:22px;font-weight:800;color:var(--text);line-height:1.2;margin-bottom:0}
+.match-title span{color:var(--gold)}
+.team-score{text-align:center;flex:1}
+.team-name{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:4px}
+
+.nav-grid{display:grid;grid-template-columns:repeat(4,1fr);
+  background:var(--navy2);border-bottom:1px solid var(--border)}
+.nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:10px 2px 8px;cursor:pointer;border-bottom:2px solid transparent;
+  transition:all .2s;gap:3px}
+.nav-item.active{border-bottom-color:var(--gold);background:rgba(240,165,0,0.06)}
+.nav-icon{font-size:18px;line-height:1}
+.nav-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;
+  color:var(--muted);text-align:center;line-height:1.2}
+.nav-item.active .nav-label{color:var(--gold)}
+.tab-content{display:none}.tab-content.active{display:block}
+
+.section{padding:20px 16px 0}
+.section-title{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.kpi-card{background:var(--card);border-radius:var(--radius);padding:14px 10px;
+  text-align:center;border:1px solid var(--border)}
+.kpi-value{font-size:28px;font-weight:900;color:var(--gold2);line-height:1}
+.kpi-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:4px}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+.zone-grid{display:flex;flex-direction:column;gap:8px}
+.zone-row{background:var(--card);border-radius:10px;border:1px solid var(--border);
+  padding:10px 14px;display:flex;align-items:center;gap:12px}
+.zone-name{font-size:12px;font-weight:600;min-width:64px}
+.zone-bar-track{flex:1;background:rgba(255,255,255,.06);border-radius:4px;height:8px;overflow:hidden}
+.zone-bar-fill{height:100%;border-radius:4px}
+.zone-pct{font-size:13px;font-weight:700;min-width:38px;text-align:right}
+.zone-count{font-size:10px;color:var(--muted);min-width:28px;text-align:right}
+
+.chart-wrap{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);
+  padding:16px 12px 8px;overflow:hidden}
+#scoreChart{width:100%;height:200px;display:block}
+.chart-legend{display:flex;gap:16px;padding:8px 4px 0;font-size:10px;color:var(--muted)}
+.legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle}
+.chart-events-legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:6px 4px 0;font-size:10px;color:var(--muted);border-top:1px solid var(--border);margin-top:6px}
+.ev-band{display:inline-block;width:14px;height:9px;border-radius:2px;vertical-align:middle;margin-right:3px}
+
+.player-table{width:100%;border-collapse:collapse;font-size:12px}
+.player-table th{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);
+  padding:6px 6px 10px;text-align:center;border-bottom:1px solid var(--border)}
+.sortable{cursor:pointer;user-select:none;white-space:nowrap}
+.sortable:hover{color:var(--gold2)}
+.sort-arrow{font-size:10px;margin-left:2px;color:var(--gold)}
+.sort-arrow.inactive{color:rgba(136,153,176,0.35);font-size:9px}
+.player-table th:first-child{text-align:left;padding-left:0}
+.player-table td{padding:9px 6px;text-align:center;
+  border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+.player-table td:first-child{text-align:left;padding-left:0}
+.player-table tr:last-child td{border-bottom:none}
+.player-num{font-size:10px;color:var(--gold);font-weight:700;margin-right:2px}
+.player-name{font-size:12px;font-weight:600}
+.eff-bar{display:inline-block;background:var(--border);border-radius:3px;height:16px;
+  position:relative;width:36px;vertical-align:middle}
+.eff-fill{position:absolute;left:0;top:0;bottom:0;border-radius:3px}
+.eff-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:700;color:#fff}
+
+.def-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.def-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:14px 12px}
+.def-player{font-size:11px;font-weight:700;margin-bottom:10px;color:var(--gold2)}
+.def-stat-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.def-stat-label{font-size:10px;color:var(--muted)}
+.def-stat-val{font-size:14px;font-weight:800}
+.val-green{color:var(--green)}.val-red{color:var(--red)}.val-blue{color:var(--blue)}.val-gold{color:var(--gold)}
+
+/* GOALKEEPER MAP */
+.gk-selector{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.gk-btn{padding:7px 14px;border-radius:20px;font-size:11px;font-weight:700;
+  cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--muted);
+  transition:all .2s;letter-spacing:.5px}
+.gk-btn.active{background:rgba(240,165,0,.15);color:var(--gold);border-color:var(--gold)}
+.gk-view{display:none}.gk-view.active{display:block}
+
+/* Goal frame */
+.goal-frame-wrap{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);
+  padding:20px 16px 14px;margin-bottom:12px}
+.goal-frame-title{font-size:10px;text-transform:uppercase;letter-spacing:2px;
+  color:var(--muted);margin-bottom:14px;text-align:center}
+.goal-svg-wrap{position:relative;width:100%;max-width:320px;margin:0 auto}
+
+/* Zone breakdown bars */
+.gk-zone-bars{display:flex;flex-direction:column;gap:7px}
+.gk-zone-row{background:rgba(255,255,255,.04);border-radius:8px;padding:9px 12px;
+  display:flex;align-items:center;gap:10px;border:1px solid transparent}
+.gk-zone-row.danger{border-color:rgba(231,76,60,.25)}
+.gk-zone-row.safe{border-color:rgba(46,204,113,.2)}
+.gz-name{font-size:11px;font-weight:700;min-width:68px}
+.gz-bars{flex:1;display:flex;flex-direction:column;gap:3px}
+.gz-bar-row{display:flex;align-items:center;gap:6px;font-size:9px;color:var(--muted)}
+.gz-bar-track{flex:1;background:rgba(255,255,255,.06);border-radius:3px;height:6px;overflow:hidden;min-width:60px}
+.gz-bar-inner{height:100%;border-radius:3px}
+.gz-stats{font-size:10px;text-align:right;min-width:42px;font-weight:700}
+
+.gk-overall-bar{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);
+  padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.gk-ov-pct{font-size:38px;font-weight:900;line-height:1}
+.gk-ov-detail{flex:1}
+.gk-ov-name{font-size:13px;font-weight:700;color:var(--gold2);margin-bottom:2px}
+.gk-ov-sub{font-size:11px;color:var(--muted)}
+
+/* Goal frame SVG cells */
+.goal-cell{cursor:default}
+.cell-bg{transition:fill .2s}
+
+.streaks-list{display:flex;flex-direction:column;gap:8px}
+.streak-item{display:flex;align-items:center;gap:12px;background:var(--card);
+  border-radius:10px;border:1px solid var(--border);padding:11px 14px}
+.streak-icon{font-size:18px;flex-shrink:0}
+.streak-body{flex:1}
+.streak-title{font-size:12px;font-weight:700;margin-bottom:2px}
+.streak-meta{font-size:10px;color:var(--muted)}
+.streak-score{font-size:13px;font-weight:700;color:var(--gold);flex-shrink:0}
+
+.events-list{display:flex;flex-direction:column;gap:8px}
+.event-item{display:flex;align-items:center;gap:10px;background:var(--card);
+  border-radius:10px;border:1px solid var(--border);padding:10px 14px;font-size:12px}
+.event-time{font-weight:700;color:var(--gold);min-width:34px;font-size:11px}
+.event-text{flex:1}
+.event-score{font-weight:700;color:var(--text)}
+.event-tag{font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
+.tag-timeout{background:rgba(58,143,209,.2);color:var(--blue)}
+.tag-sanction{background:rgba(231,76,60,.2);color:var(--red)}
+.tag-our-excl{background:rgba(240,165,0,.15);color:var(--gold);border:1px solid rgba(240,165,0,.3)}
+
+.gk-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:8px}
+.gk-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.gk-name{font-size:14px;font-weight:700;color:var(--gold2)}
+.gk-overall-txt{font-size:11px;color:var(--muted)}
+.gk-overall-txt span{font-weight:700;font-size:20px;color:var(--text)}
+.gk-zone-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.gk-zone{text-align:center;background:rgba(255,255,255,.04);border-radius:8px;
+  padding:8px 4px;border:1px solid transparent}
+.gk-zone-name{font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px}
+.gk-zone-pct{font-size:14px;font-weight:800}
+.gk-zone-count{font-size:9px;color:var(--muted);margin-top:1px}
+.pct-high{color:var(--green)}.pct-mid{color:var(--gold)}.pct-low{color:var(--red)}.pct-zero{color:var(--muted)}
+
+.footer{text-align:center;padding:28px 16px 8px;font-size:10px;color:var(--muted);letter-spacing:1px}
+.footer span{color:var(--gold)}
+
+/* PLAYER MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;
+  display:none;align-items:flex-start;justify-content:center;padding:0;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:var(--navy2);width:100%;max-width:480px;min-height:100vh;
+  padding:0 0 40px;position:relative;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-header{background:linear-gradient(135deg,#0a1520,#162032);
+  padding:20px 16px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10}
+.modal-back{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:18px;flex-shrink:0;border:none;color:var(--text)}
+.modal-title{flex:1}
+.modal-player-num{font-size:11px;color:var(--gold);font-weight:700;letter-spacing:1px}
+.modal-player-name{font-size:20px;font-weight:800;color:var(--text);line-height:1.2}
+.modal-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:16px}
+.modal-kpi{background:var(--card);border-radius:10px;padding:12px 8px;text-align:center;border:1px solid var(--border)}
+.modal-kpi-val{font-size:24px;font-weight:900;color:var(--gold2);line-height:1}
+.modal-kpi-label{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:3px}
+.modal-section{padding:0 16px 4px}
+.modal-section-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.modal-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.exclusion-list{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.exclusion-item{background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);
+  border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:10px;font-size:12px}
+.excl-time{color:var(--red);font-weight:700;min-width:34px}
+.excl-score{color:var(--text);font-weight:600}
+.action-list{display:flex;flex-direction:column;gap:5px}
+.action-row{display:flex;align-items:center;gap:8px;padding:8px 10px;
+  border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02)}
+.action-row.atk{border-left:2px solid var(--gold)}
+.action-row.def{border-left:2px solid var(--blue)}
+.action-row.good{background:rgba(46,204,113,0.05)}
+.action-row.bad{background:rgba(231,76,60,0.05)}
+.act-time{font-size:10px;color:var(--gold);font-weight:700;min-width:0;width:36px;max-width:36px;flex-shrink:0;overflow:hidden;font-variant-numeric:tabular-nums}
+.act-score{font-size:10px;color:var(--muted);min-width:32px}
+.act-body{flex:1}
+.act-jugada{font-size:12px;font-weight:600;color:var(--text)}
+.act-result{font-size:11px;margin-top:1px}
+.act-assist-line{font-size:10px;color:var(--muted);margin-top:3px;padding:4px 8px;
+  background:rgba(255,255,255,0.04);border-radius:4px}
+.act-rating{font-size:12px;font-weight:800;min-width:36px;text-align:right;
+  flex-shrink:0;padding-top:1px;font-variant-numeric:tabular-nums}
+.act-icon{font-size:14px;flex-shrink:0;padding-top:1px}
+
+/* SUBTABS */
+.subtabs{display:flex;gap:0;padding:12px 16px 0;border-bottom:1px solid var(--border)}
+.subtab{padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer;
+  border-bottom:2px solid transparent;color:var(--muted);transition:all .2s;
+  text-transform:uppercase;letter-spacing:1px}
+.subtab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.subtab-content{display:none}.subtab-content.active{display:block}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="jornada-label">Amistoso · Juvenil B</div>
+  <div class="match-title">Agustinos <span>vs</span> Cadete</div>
+</div>
+
+<div class="nav-grid">
+  <div class="nav-item active" data-tab="jugadores"><span class="nav-icon">👥</span><span class="nav-label">Jugadores</span></div>
+  <div class="nav-item" data-tab="porteria"><span class="nav-icon">🧤</span><span class="nav-label">Portería</span></div>
+</div>
+
+<!-- RESUMEN -->
+<div class="tab-content active" id="tab-jugadores">
+  <div class="subtabs">
+    <div class="subtab active" data-subtab="ataque">⚔️ Ataque</div>
+    <div class="subtab" data-subtab="defensa">🛡️ Defensa</div>
+  </div>
+  <div class="subtab-content active" id="subtab-ataque">
+    <div class="section">
+      <div style="overflow-x:auto">
+        <table class="player-table">
+          <thead><tr id="atkHead">
+            <th>Jugador</th><th>Goles</th><th>Ef.</th><th>Asis.</th><th>Pérd.</th><th>VAL</th>
+          </tr></thead>
+          <tbody id="playerBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="subtab-content" id="subtab-defensa">
+    <div class="section">
+      <div id="defGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PORTERÍA -->
+<div class="tab-content" id="tab-porteria">
+  <div class="section">
+    <div class="section-title">Análisis de portería</div>
+    <div class="gk-selector" id="gkSelector"></div>
+    <div id="gkViews"></div>
+  </div>
+</div>
+
+<!-- MOMENTOS -->
+
+<div class="footer">Generado por <span>BenchMaster</span></div>
+
+<!-- PLAYER MODAL -->
+<div class="modal-overlay" id="playerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <button class="modal-back" id="modalBack">←</button>
+      <div class="modal-title">
+        <div class="modal-player-num" id="modalNum"></div>
+        <div class="modal-player-name" id="modalName"></div>
+      </div>
+    </div>
+    <div class="modal-kpis" id="modalKpis"></div>
+    <div class="modal-section" id="modalExclusions"></div>
+    <div class="modal-section">
+      <div class="modal-section-title">Registro de jugadas</div>
+      <div class="action-list" id="modalActions"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ZONE MODAL -->
+<div class="modal-overlay" id="zoneModal">
+  <div class="modal">
+    <div class="modal-header">
+      <button class="modal-back" id="zoneModalBack">←</button>
+      <div class="modal-title">
+        <div class="modal-player-num" id="zoneModalSub"></div>
+        <div class="modal-player-name" id="zoneModalTitle"></div>
+      </div>
+    </div>
+    <div class="modal-kpis" id="zoneModalKpis"></div>
+    <div class="modal-section">
+      <div class="modal-section-title">Lanzamientos</div>
+      <div class="action-list" id="zoneModalList"></div>
+    </div>
+  </div>
+</div>
+
+<script>const DATA ={"partido": "Cadete", "rival": "Cadete", "jornada": "?", "categoria": "Juvenil B", "resultado": "8-12", "victoria": false, "score_timeline": [{"t": 30.9167, "our": 0, "their": 1}, {"t": 31.5333, "our": 1, "their": 1}, {"t": 34.1833, "our": 2, "their": 1}, {"t": 36.3833, "our": 2, "their": 2}, {"t": 37.45, "our": 3, "their": 2}, {"t": 38.5667, "our": 4, "their": 2}, {"t": 39.4333, "our": 4, "their": 3}, {"t": 40.95, "our": 4, "their": 4}, {"t": 41.4833, "our": 5, "their": 4}, {"t": 42.2167, "our": 5, "their": 5}, {"t": 43.2667, "our": 5, "their": 6}, {"t": 44.5, "our": 5, "their": 7}, {"t": 44.8333, "our": 6, "their": 7}, {"t": 45.7333, "our": 6, "their": 8}, {"t": 49.25, "our": 6, "their": 9}, {"t": 50.5833, "our": 6, "their": 10}, {"t": 51.7667, "our": 6, "their": 11}, {"t": 57.1333, "our": 7, "their": 11}, {"t": 57.9667, "our": 7, "their": 12}, {"t": 59.7667, "our": 8, "their": 12}], "zone_stats": {"6M": {"gol": 1, "total": 5}, "Ext. Der": {"gol": 1, "total": 2}, "9M": {"gol": 1, "total": 2}, "7M": {"gol": 1, "total": 1}, "Contra": {"gol": 2, "total": 3}, "Ext. Izq": {"gol": 2, "total": 2}}, "zone_detail": {"6M": [{"time_fmt": "30:32", "num": "22", "name": "ADAN", "resultado": "PARADA_RIVAL", "score": "0-0"}, {"time_fmt": "31:32", "num": "23", "name": "GUTI", "resultado": "GOL", "score": "1-1"}, {"time_fmt": "35:10", "num": "22", "name": "ADAN", "resultado": "FALLO", "score": "2-1"}, {"time_fmt": "42:39", "num": "23", "name": "GUTI", "resultado": "FALLO", "score": "5-5"}, {"time_fmt": "43:49", "num": "04", "name": "GUILLE", "resultado": "FALLO", "score": "5-6"}], "Ext. Der": [{"time_fmt": "34:11", "num": "07", "name": "CAPO", "resultado": "GOL", "score": "2-1"}, {"time_fmt": "36:53", "num": "23", "name": "GUTI", "resultado": "FALLO", "score": "2-2"}], "9M": [{"time_fmt": "36:09", "num": "88", "name": "DAVID", "resultado": "PARADA_RIVAL", "score": "2-1"}, {"time_fmt": "37:27", "num": "23", "name": "GUTI", "resultado": "GOL", "score": "3-2"}], "7M": [{"time_fmt": "38:34", "num": "04", "name": "GUILLE", "resultado": "GOL", "score": "4-2"}], "Contra": [{"time_fmt": "40:24", "num": "07", "name": "CAPO", "resultado": "FALLO", "score": "4-3"}, {"time_fmt": "57:08", "num": "22", "name": "ADAN", "resultado": "GOL", "score": "7-11"}, {"time_fmt": "59:46", "num": "22", "name": "ADAN", "resultado": "GOL", "score": "8-12"}], "Ext. Izq": [{"time_fmt": "41:29", "num": "07", "name": "CAPO", "resultado": "GOL", "score": "5-4"}, {"time_fmt": "44:50", "num": "07", "name": "CAPO", "resultado": "GOL", "score": "6-7"}]}, "player_stats": {"14-ANDRES": {"goles": 0, "lanzamientos": 0, "asistencias": 0, "robos": 1, "perdidas": 0, "bloqueos": 0, "1x1_exito": 7, "1x1_fallo": 6, "faltas_def": 7}, "07-CAPO": {"goles": 3, "lanzamientos": 4, "asistencias": 1, "robos": 0, "perdidas": 1, "bloqueos": 0, "1x1_exito": 0, "1x1_fallo": 0, "faltas_def": 0}, "22-ADAN": {"goles": 2, "lanzamientos": 4, "asistencias": 7, "robos": 1, "perdidas": 3, "bloqueos": 0, "1x1_exito": 2, "1x1_fallo": 5, "faltas_def": 0}, "23-GUTI": {"goles": 2, "lanzamientos": 4, "asistencias": 2, "robos": 1, "perdidas": 0, "bloqueos": 0, "1x1_exito": 0, "1x1_fallo": 4, "faltas_def": 4}, "88-DAVID": {"goles": 0, "lanzamientos": 1, "asistencias": 3, "robos": 1, "perdidas": 0, "bloqueos": 0, "1x1_exito": 2, "1x1_fallo": 2, "faltas_def": 0}, "04-GUILLE": {"goles": 1, "lanzamientos": 2, "asistencias": 0, "robos": 0, "perdidas": 1, "bloqueos": 0, "1x1_exito": 0, "1x1_fallo": 3, "faltas_def": 0}}, "gk_totals": {"96-ADRI": {"paradas": 2, "total": 9}, "01-SANTA": {"paradas": 5, "total": 10}}, "gk_stats": {"96-ADRI": {"7M": {"paradas": 0, "total": 1}, "9M": {"paradas": 1, "total": 3}, "6M": {"paradas": 1, "total": 5}}, "01-SANTA": {"Ext. Izq": {"paradas": 0, "total": 1}, "Contra": {"paradas": 2, "total": 2}, "Ext. Der": {"paradas": 1, "total": 2}, "6M": {"paradas": 0, "total": 2}, "9M": {"paradas": 2, "total": 3}}}, "gk_detail": {"96-ADRI": {"7M": {"gol": 1, "parada": 0, "fallo": 0, "total": 1}, "9M": {"gol": 2, "parada": 1, "fallo": 0, "total": 3}, "6M": {"gol": 4, "parada": 1, "fallo": 0, "total": 5}}, "01-SANTA": {"EXT_IZQ": {"gol": 1, "parada": 0, "fallo": 0, "total": 1}, "6M": {"gol": 2, "parada": 0, "fallo": 2, "total": 2}, "CONTRA": {"gol": 0, "parada": 2, "fallo": 0, "total": 2}, "EXT_DER": {"gol": 1, "parada": 1, "fallo": 0, "total": 2}, "9M": {"gol": 1, "parada": 2, "fallo": 0, "total": 3}}}, "streaks": [{"type": "their", "count": 3, "time_start": 42.2167, "time_end": 44.5, "time_start_fmt": "42:13", "time_end_fmt": "44:30", "score_start": "5-4", "score_end": "5-7"}, {"type": "their", "count": 4, "time_start": 45.7333, "time_end": 51.7667, "time_start_fmt": "45:44", "time_end_fmt": "51:46", "score_start": "6-7", "score_end": "6-11"}], "timeouts": [], "sanctions": [], "our_excl": [], "halftime": {"our": 0, "their": 0}, "player_detail": {"23-GUTI": {"num": "23", "name": "GUTI", "minutes": 15.0, "minutes_fmt": "15:00", "atk_good": 4, "atk_total": 6, "def_good": 1, "def_total": 9, "actions": [{"time": 0.0, "time_fmt": "00:00", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 1.7333, "time_fmt": "01:44", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 30.0, "time_fmt": "30:00", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 30.6667, "time_fmt": "30:40", "score": "0-0", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 31.5333, "time_fmt": "31:32", "score": "1-1", "type": "A", "jugada": "LANZAMIENTO 6M", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 31.8333, "time_fmt": "31:50", "score": "1-1", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 31.8667, "time_fmt": "31:52", "score": "1-1", "type": "D", "jugada": "ROBO", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 32.7167, "time_fmt": "32:43", "score": "1-1", "type": "D", "jugada": "FALTA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 33.2, "time_fmt": "33:12", "score": "1-1", "type": "D", "jugada": "FALTA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 34.15, "time_fmt": "34:09", "score": "1-1", "type": "A", "jugada": "ASISTENCIA", "resultado": "EXITO", "assist_target": "#07 CAPO", "assist_goal": true}, {"time": 35.1333, "time_fmt": "35:08", "score": "2-1", "type": "A", "jugada": "ASISTENCIA", "resultado": "EXITO", "assist_target": "#22 ADAN", "assist_goal": false}, {"time": 36.8833, "time_fmt": "36:53", "score": "2-2", "type": "A", "jugada": "LANZAMIENTO EXT DER", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 37.45, "time_fmt": "37:27", "score": "3-2", "type": "A", "jugada": "LANZAMIENTO 9M", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 39.0333, "time_fmt": "39:02", "score": "4-2", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 40.9, "time_fmt": "40:54", "score": "4-3", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 41.8833, "time_fmt": "41:53", "score": "5-4", "type": "D", "jugada": "FALTA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 42.65, "time_fmt": "42:39", "score": "5-5", "type": "A", "jugada": "LANZAMIENTO 6M", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 44.2333, "time_fmt": "44:14", "score": "5-6", "type": "D", "jugada": "FALTA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 45.0, "time_fmt": "45:00", "score": "6-7", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}]}, "04-GUILLE": {"num": "04", "name": "GUILLE", "minutes": 15.19, "minutes_fmt": "15:11", "atk_good": 1, "atk_total": 3, "def_good": 0, "def_total": 3, "actions": [{"time": 0.0, "time_fmt": "00:00", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 1.9167, "time_fmt": "01:55", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 30.0, "time_fmt": "30:00", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 34.6, "time_fmt": "34:36", "score": "2-1", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 36.3333, "time_fmt": "36:20", "score": "2-1", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 38.5667, "time_fmt": "38:34", "score": "4-2", "type": "A", "jugada": "LANZAMIENTO 7M", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 40.0667, "time_fmt": "40:04", "score": "4-3", "type": "A", "jugada": "PERDIDA", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 42.1833, "time_fmt": "42:11", "score": "5-4", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 43.8167, "time_fmt": "43:49", "score": "5-6", "type": "A", "jugada": "LANZAMIENTO 6M", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 45.0, "time_fmt": "45:00", "score": "6-7", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}]}, "22-ADAN": {"num": "22", "name": "ADAN", "minutes": 30.17, "minutes_fmt": "30:10", "atk_good": 9, "atk_total": 14, "def_good": 4, "def_total": 9, "actions": [{"time": 0.0, "time_fmt": "00:00", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 1.9, "time_fmt": "01:54", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 30.0, "time_fmt": "30:00", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 30.5333, "time_fmt": "30:32", "score": "0-0", "type": "A", "jugada": "LANZAMIENTO 6M", "resultado": "PARADA_RIVAL", "assist_target": null, "assist_goal": null}, {"time": 32.6, "time_fmt": "32:36", "score": "1-1", "type": "D", "jugada": "1X1 DEF EXITO", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 35.1667, "time_fmt": "35:10", "score": "2-1", "type": "A", "jugada": "LANZAMIENTO 6M", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 35.45, "time_fmt": "35:27", "score": "2-1", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 36.3167, "time_fmt": "36:19", "score": "2-1", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 36.85, "time_fmt": "36:51", "score": "2-2", "type": "A", "jugada": "ASISTENCIA", "resultado": "EXITO", "assist_target": "#23 GUTI", "assist_goal": false}, {"time": 40.25, "time_fmt": "40:15", "score": "4-3", "type": "D", "jugada": "ROBO", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 40.8667, "time_fmt": "40:52", "score": "4-3", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 43.45, "time_fmt": "43:27", "score": "5-6", "type": "A", "jugada": "1X1", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 43.7833, "time_fmt": "43:47", "score": "5-6", "type": "A", "jugada": "ASISTENCIA", "resultado": "EXITO", "assist_target": "#04 GUILLE", "assist_goal": false}, {"time": 45.0, "time_fmt": "45:00", "score": "6-7", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 45.0, "time_fmt": "45:00", "score": "6-7", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 45.3667, "time_fmt": "45:22", "score": "6-7", "type": "A", "jugada": "ASISTENCIA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 46.2167, "time_fmt": "46:13", "score": "6-8", "type": "A", "jugada": "PERDIDA", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 47.5, "time_fmt": "47:30", "score": "6-8", "type": "A", "jugada": "PERDIDA", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 51.6833, "time_fmt": "51:41", "score": "6-10", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 51.8667, "time_fmt": "51:52", "score": "6-11", "type": "A", "jugada": "ASISTENCIA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 54.55, "time_fmt": "54:33", "score": "6-11", "type": "A", "jugada": "PERDIDA", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 55.3, "time_fmt": "55:18", "score": "6-11", "type": "A", "jugada": "ASISTENCIA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 55.7167, "time_fmt": "55:43", "score": "6-11", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 56.5167, "time_fmt": "56:31", "score": "6-11", "type": "A", "jugada": "ASISTENCIA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 57.1333, "time_fmt": "57:08", "score": "7-11", "type": "A", "jugada": "LANZAMIENTO CONTRA", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 57.8667, "time_fmt": "57:52", "score": "7-11", "type": "D", "jugada": "1X1 DEF EXITO", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 58.8667, "time_fmt": "58:52", "score": "7-12", "type": "D", "jugada": "AYUDA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 59.2333, "time_fmt": "59:14", "score": "7-12", "type": "A", "jugada": "ASISTENCIA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 59.7667, "time_fmt": "59:46", "score": "8-12", "type": "A", "jugada": "LANZAMIENTO CONTRA", "resultado": "GOL", "assist_target": null, "assist_goal": null}]}, "01-SANTA": {"num": "01", "name": "SANTA", "minutes": 16.92, "minutes_fmt": "16:55", "atk_good": 0, "atk_total": 0, "def_good": 0, "def_total": 0, "actions": [{"time": 0.0, "time_fmt": "00:00", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 1.9167, "time_fmt": "01:55", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 45.0, "time_fmt": "45:00", "score": "6-7", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 45.7333, "time_fmt": "45:44", "score": "6-8", "type": "P", "jugada": "LANZAMIENTO RIVAL EXT IZQ", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 47.15, "time_fmt": "47:09", "score": "6-8", "type": "P", "jugada": "LANZAMIENTO RIVAL 6M", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 47.6, "time_fmt": "47:36", "score": "6-8", "type": "P", "jugada": "LANZAMIENTO RIVAL CONTRA", "resultado": "PARADA", "assist_target": null, "assist_goal": null}, {"time": 49.25, "time_fmt": "49:15", "score": "6-9", "type": "P", "jugada": "LANZAMIENTO RIVAL EXT DER", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 50.5833, "time_fmt": "50:35", "score": "6-10", "type": "P", "jugada": "LANZAMIENTO RIVAL 6M", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 51.7667, "time_fmt": "51:46", "score": "6-11", "type": "P", "jugada": "LANZAMIENTO RIVAL 6M", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 52.3, "time_fmt": "52:18", "score": "6-11", "type": "P", "jugada": "LANZAMIENTO RIVAL 6M", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 53.9833, "time_fmt": "53:59", "score": "6-11", "type": "P", "jugada": "LANZAMIENTO RIVAL EXT DER", "resultado": "PARADA", "assist_target": null, "assist_goal": null}, {"time": 54.2, "time_fmt": "54:12", "score": "6-11", "type": "P", "jugada": "LANZAMIENTO RIVAL CONTRA", "resultado": "PARADA", "assist_target": null, "assist_goal": null}, {"time": 55.1167, "time_fmt": "55:07", "score": "6-11", "type": "P", "jugada": "LANZAMIENTO RIVAL 9M", "resultado": "PARADA", "assist_target": null, "assist_goal": null}, {"time": 57.9667, "time_fmt": "57:58", "score": "7-12", "type": "P", "jugada": "LANZAMIENTO RIVAL 9M", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 59.1, "time_fmt": "59:06", "score": "7-12", "type": "P", "jugada": "LANZAMIENTO RIVAL 9M", "resultado": "PARADA", "assist_target": null, "assist_goal": null}]}, "07-CAPO": {"num": "07", "name": "CAPO", "minutes": 15.07, "minutes_fmt": "15:04", "atk_good": 4, "atk_total": 6, "def_good": 0, "def_total": 0, "actions": [{"time": 0.0, "time_fmt": "00:00", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 1.8, "time_fmt": "01:48", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 30.0, "time_fmt": "30:00", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 30.5, "time_fmt": "30:30", "score": "0-0", "type": "A", "jugada": "ASISTENCIA", "resultado": "EXITO", "assist_target": "#22 ADAN", "assist_goal": false}, {"time": 32.25, "time_fmt": "32:15", "score": "1-1", "type": "A", "jugada": "PERDIDA", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 34.1833, "time_fmt": "34:11", "score": "2-1", "type": "A", "jugada": "LANZAMIENTO EXT DER", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 40.4, "time_fmt": "40:24", "score": "4-3", "type": "A", "jugada": "LANZAMIENTO CONTRA", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 41.4833, "time_fmt": "41:29", "score": "5-4", "type": "A", "jugada": "LANZAMIENTO EXT IZQ", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 44.8333, "time_fmt": "44:50", "score": "6-7", "type": "A", "jugada": "LANZAMIENTO EXT IZQ", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 45.0, "time_fmt": "45:00", "score": "6-7", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}]}, "96-ADRI": {"num": "96", "name": "ADRI", "minutes": 15.0, "minutes_fmt": "15:00", "atk_good": 0, "atk_total": 0, "def_good": 0, "def_total": 0, "actions": [{"time": 30.0, "time_fmt": "30:00", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 30.9167, "time_fmt": "30:55", "score": "0-1", "type": "P", "jugada": "LANZAMIENTO RIVAL 7M", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 33.4333, "time_fmt": "33:26", "score": "1-1", "type": "P", "jugada": "LANZAMIENTO RIVAL 9M", "resultado": "PARADA", "assist_target": null, "assist_goal": null}, {"time": 35.5, "time_fmt": "35:30", "score": "2-1", "type": "P", "jugada": "LANZAMIENTO RIVAL 6M", "resultado": "PARADA", "assist_target": null, "assist_goal": null}, {"time": 36.3833, "time_fmt": "36:23", "score": "2-2", "type": "P", "jugada": "LANZAMIENTO RIVAL 6M", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 39.4333, "time_fmt": "39:26", "score": "4-3", "type": "P", "jugada": "LANZAMIENTO RIVAL 9M", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 40.95, "time_fmt": "40:57", "score": "4-4", "type": "P", "jugada": "LANZAMIENTO RIVAL 6M", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 42.2167, "time_fmt": "42:13", "score": "5-5", "type": "P", "jugada": "LANZAMIENTO RIVAL 6M", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 43.2667, "time_fmt": "43:16", "score": "5-6", "type": "P", "jugada": "LANZAMIENTO RIVAL 9M", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 44.5, "time_fmt": "44:30", "score": "5-7", "type": "P", "jugada": "LANZAMIENTO RIVAL 6M", "resultado": "GOL", "assist_target": null, "assist_goal": null}, {"time": 45.0, "time_fmt": "45:00", "score": "6-7", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}]}, "14-ANDRES": {"num": "14", "name": "ANDRES", "minutes": 30.97, "minutes_fmt": "30:58", "atk_good": 0, "atk_total": 0, "def_good": 9, "def_total": 23, "actions": [{"time": 0.0, "time_fmt": "00:00", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 1.4333, "time_fmt": "01:26", "score": "0-0", "type": "D", "jugada": "FALTA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 1.85, "time_fmt": "01:51", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 1.8667, "time_fmt": "01:52", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 2.0, "time_fmt": "02:00", "score": "0-0", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 2.6, "time_fmt": "02:36", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 3.15, "time_fmt": "03:09", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 4.6833, "time_fmt": "04:41", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 5.2333, "time_fmt": "05:14", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 5.55, "time_fmt": "05:33", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 5.6167, "time_fmt": "05:37", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 6.65, "time_fmt": "06:39", "score": "0-0", "type": "D", "jugada": "1X1 DEF EXITO", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 6.7, "time_fmt": "06:42", "score": "0-0", "type": "D", "jugada": "FALTA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 7.5167, "time_fmt": "07:31", "score": "0-0", "type": "D", "jugada": "1X1 DEF EXITO", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 7.65, "time_fmt": "07:39", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 7.7833, "time_fmt": "07:47", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 8.4333, "time_fmt": "08:26", "score": "0-0", "type": "D", "jugada": "ROBO", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 9.1, "time_fmt": "09:06", "score": "0-0", "type": "D", "jugada": "1X1 DEF EXITO", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 9.6, "time_fmt": "09:36", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 10.2167, "time_fmt": "10:13", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 10.9, "time_fmt": "10:54", "score": "0-0", "type": "D", "jugada": "FALTA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 11.4667, "time_fmt": "11:28", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 11.55, "time_fmt": "11:33", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 12.6333, "time_fmt": "12:38", "score": "0-0", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 12.8667, "time_fmt": "12:52", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 12.9667, "time_fmt": "12:58", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 13.0333, "time_fmt": "13:02", "score": "0-0", "type": "D", "jugada": "7M", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 13.0833, "time_fmt": "13:05", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 13.3333, "time_fmt": "13:20", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 13.6, "time_fmt": "13:36", "score": "0-0", "type": "D", "jugada": "1X1 DEF EXITO", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 13.6833, "time_fmt": "13:41", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 13.7333, "time_fmt": "13:44", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 14.1667, "time_fmt": "14:10", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 14.35, "time_fmt": "14:21", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 15.0, "time_fmt": "15:00", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 30.0, "time_fmt": "30:00", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 32.5667, "time_fmt": "32:34", "score": "1-1", "type": "D", "jugada": "1X1 DEF EXITO", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 34.4333, "time_fmt": "34:26", "score": "2-1", "type": "D", "jugada": "FALTA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 37.85, "time_fmt": "37:51", "score": "3-2", "type": "D", "jugada": "1X1 DEF EXITO", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 38.3, "time_fmt": "38:18", "score": "3-2", "type": "A", "jugada": "1X1", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 41.9333, "time_fmt": "41:56", "score": "5-4", "type": "D", "jugada": "AYUDA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 42.0333, "time_fmt": "42:02", "score": "5-4", "type": "D", "jugada": "FALTA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 42.8167, "time_fmt": "42:49", "score": "5-5", "type": "D", "jugada": "FALTA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 44.45, "time_fmt": "44:27", "score": "5-6", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 45.0, "time_fmt": "45:00", "score": "6-7", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 45.4167, "time_fmt": "45:25", "score": "6-7", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 45.85, "time_fmt": "45:51", "score": "6-8", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 46.25, "time_fmt": "46:15", "score": "6-8", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 46.4333, "time_fmt": "46:26", "score": "6-8", "type": "D", "jugada": "FALTA", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 46.95, "time_fmt": "46:57", "score": "6-8", "type": "D", "jugada": "1X1 DEF EXITO", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 47.0833, "time_fmt": "47:05", "score": "6-8", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 47.1667, "time_fmt": "47:10", "score": "6-8", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 48.0, "time_fmt": "48:00", "score": "6-8", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 49.35, "time_fmt": "49:21", "score": "6-9", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 49.55, "time_fmt": "49:33", "score": "6-9", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 50.0333, "time_fmt": "50:02", "score": "6-9", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 50.75, "time_fmt": "50:45", "score": "6-10", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 51.2667, "time_fmt": "51:16", "score": "6-10", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 52.2, "time_fmt": "52:12", "score": "6-11", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 52.3167, "time_fmt": "52:19", "score": "6-11", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 52.4833, "time_fmt": "52:29", "score": "6-11", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 52.8333, "time_fmt": "52:50", "score": "6-11", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}]}, "88-DAVID": {"num": "88", "name": "DAVID", "minutes": 14.99, "minutes_fmt": "14:59", "atk_good": 3, "atk_total": 4, "def_good": 3, "def_total": 6, "actions": [{"time": 0.0, "time_fmt": "00:00", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 0.0, "time_fmt": "00:00", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 0.0, "time_fmt": "00:00", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 1.7167, "time_fmt": "01:43", "score": "0-0", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 30.0, "time_fmt": "30:00", "score": "0-0", "type": "C", "jugada": "ENTRA", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}, {"time": 30.7167, "time_fmt": "30:43", "score": "0-0", "type": "D", "jugada": "7M", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 33.15, "time_fmt": "33:09", "score": "1-1", "type": "D", "jugada": "1X1 DEF EXITO", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 35.4167, "time_fmt": "35:25", "score": "2-1", "type": "D", "jugada": "1X1 DEF EXITO", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 36.15, "time_fmt": "36:09", "score": "2-1", "type": "A", "jugada": "LANZAMIENTO 9M", "resultado": "PARADA_RIVAL", "assist_target": null, "assist_goal": null}, {"time": 37.4167, "time_fmt": "37:25", "score": "2-2", "type": "A", "jugada": "ASISTENCIA", "resultado": "EXITO", "assist_target": "#23 GUTI", "assist_goal": true}, {"time": 37.9, "time_fmt": "37:54", "score": "3-2", "type": "D", "jugada": "ROBO", "resultado": "EXITO", "assist_target": null, "assist_goal": null}, {"time": 41.45, "time_fmt": "41:27", "score": "4-4", "type": "A", "jugada": "ASISTENCIA", "resultado": "EXITO", "assist_target": "#07 CAPO", "assist_goal": true}, {"time": 42.8, "time_fmt": "42:48", "score": "5-5", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 43.2167, "time_fmt": "43:13", "score": "5-5", "type": "D", "jugada": "1X1 DEF FALLO", "resultado": "FALLO", "assist_target": null, "assist_goal": null}, {"time": 44.8, "time_fmt": "44:48", "score": "5-7", "type": "A", "jugada": "ASISTENCIA", "resultado": "EXITO", "assist_target": "#07 CAPO", "assist_goal": true}, {"time": 45.0, "time_fmt": "45:00", "score": "6-7", "type": "C", "jugada": "SALE", "resultado": "NEUTRO", "assist_target": null, "assist_goal": null}]}}, "ratings": {"14-ANDRES": {"val_raw": 11.1, "val_norm": 3.58, "minutes": 31.0, "breakdown": [{"time_fmt": "01:26", "label": "Falta táctica", "pts": 0.6, "mult": 2.0}, {"time_fmt": "02:00", "label": "1x1 def fallo", "pts": -2.0, "mult": 2.0}, {"time_fmt": "06:39", "label": "1x1 def éxito", "pts": 2.0, "mult": 2.0}, {"time_fmt": "06:42", "label": "Falta táctica", "pts": 0.6, "mult": 2.0}, {"time_fmt": "07:31", "label": "1x1 def éxito", "pts": 2.0, "mult": 2.0}, {"time_fmt": "08:26", "label": "Robo", "pts": 5.0, "mult": 2.0}, {"time_fmt": "09:06", "label": "1x1 def éxito", "pts": 2.0, "mult": 2.0}, {"time_fmt": "10:54", "label": "Falta táctica", "pts": 0.6, "mult": 2.0}, {"time_fmt": "12:38", "label": "1x1 def fallo", "pts": -2.0, "mult": 2.0}, {"time_fmt": "13:02", "label": "Provoca 7M", "pts": -3.0, "mult": 2.0}, {"time_fmt": "13:36", "label": "1x1 def éxito", "pts": 2.0, "mult": 2.0}, {"time_fmt": "32:34", "label": "1x1 def éxito", "pts": 2.2, "mult": 2.2}, {"time_fmt": "34:26", "label": "Falta táctica", "pts": 0.56, "mult": 1.87}, {"time_fmt": "37:51", "label": "1x1 def éxito", "pts": 1.87, "mult": 1.87}, {"time_fmt": "38:18", "label": "1x1 ataque éxito", "pts": 0.94, "mult": 1.87}, {"time_fmt": "41:56", "label": "Ayuda defensiva", "pts": 1.1, "mult": 2.21}, {"time_fmt": "42:02", "label": "Falta táctica", "pts": 0.66, "mult": 2.21}, {"time_fmt": "42:49", "label": "Falta táctica", "pts": 0.78, "mult": 2.6}, {"time_fmt": "44:27", "label": "1x1 def fallo", "pts": -2.21, "mult": 2.21}, {"time_fmt": "46:26", "label": "Falta táctica", "pts": 0.55, "mult": 1.82}, {"time_fmt": "46:57", "label": "1x1 def éxito", "pts": 1.82, "mult": 1.82}, {"time_fmt": "47:05", "label": "1x1 def fallo", "pts": -1.82, "mult": 1.82}, {"time_fmt": "50:02", "label": "1x1 def fallo", "pts": -1.65, "mult": 1.65}, {"time_fmt": "52:12", "label": "1x1 def fallo", "pts": -1.5, "mult": 1.5}]}, "07-CAPO": {"val_raw": 8.39, "val_norm": 5.57, "minutes": 15.1, "breakdown": [{"time_fmt": "30:30", "label": "Asistencia", "pts": 1.1, "mult": 2.2}, {"time_fmt": "32:15", "label": "Pérdida", "pts": -3.3, "mult": 2.2}, {"time_fmt": "34:11", "label": "Gol EXTREMO", "pts": 3.74, "mult": 1.87}, {"time_fmt": "40:24", "label": "Fallo CONTRA", "pts": -1.99, "mult": 2.21}, {"time_fmt": "41:29", "label": "Gol EXTREMO", "pts": 4.42, "mult": 2.21}, {"time_fmt": "44:50", "label": "Gol EXTREMO", "pts": 4.42, "mult": 2.21}]}, "22-ADAN": {"val_raw": 11.93, "val_norm": 3.95, "minutes": 30.2, "breakdown": [{"time_fmt": "30:32", "label": "Fallo 6M", "pts": -1.65, "mult": 2.2}, {"time_fmt": "32:36", "label": "1x1 def éxito", "pts": 2.2, "mult": 2.2}, {"time_fmt": "35:10", "label": "Fallo 6M", "pts": -1.4, "mult": 1.87}, {"time_fmt": "35:27", "label": "1x1 def fallo", "pts": -1.87, "mult": 1.87}, {"time_fmt": "36:19", "label": "1x1 def fallo", "pts": -1.87, "mult": 1.87}, {"time_fmt": "36:51", "label": "Asistencia", "pts": 1.1, "mult": 2.2}, {"time_fmt": "40:15", "label": "Robo", "pts": 5.53, "mult": 2.21}, {"time_fmt": "40:52", "label": "1x1 def fallo", "pts": -2.21, "mult": 2.21}, {"time_fmt": "43:27", "label": "1x1 ataque éxito", "pts": 1.1, "mult": 2.21}, {"time_fmt": "43:47", "label": "Asistencia", "pts": 1.1, "mult": 2.21}, {"time_fmt": "45:22", "label": "Asistencia", "pts": 1.1, "mult": 2.21}, {"time_fmt": "46:13", "label": "Pérdida", "pts": -2.73, "mult": 1.82}, {"time_fmt": "47:30", "label": "Pérdida", "pts": -2.73, "mult": 1.82}, {"time_fmt": "51:41", "label": "1x1 def fallo", "pts": -1.65, "mult": 1.65}, {"time_fmt": "51:52", "label": "Asistencia", "pts": 0.75, "mult": 1.5}, {"time_fmt": "54:33", "label": "Pérdida", "pts": -2.25, "mult": 1.5}, {"time_fmt": "55:18", "label": "Asistencia", "pts": 1.0, "mult": 2.0}, {"time_fmt": "55:43", "label": "1x1 def fallo", "pts": -2.0, "mult": 2.0}, {"time_fmt": "56:31", "label": "Asistencia", "pts": 1.0, "mult": 2.0}, {"time_fmt": "57:08", "label": "Gol CONTRA (desconocido)", "pts": 6.6, "mult": 2.2}, {"time_fmt": "57:52", "label": "1x1 def éxito", "pts": 2.2, "mult": 2.2}, {"time_fmt": "58:52", "label": "Ayuda defensiva", "pts": 1.0, "mult": 2.0}, {"time_fmt": "59:14", "label": "Asistencia", "pts": 1.0, "mult": 2.0}, {"time_fmt": "59:46", "label": "Gol CONTRA (desconocido)", "pts": 6.6, "mult": 2.2}]}, "23-GUTI": {"val_raw": 11.91, "val_norm": 7.94, "minutes": 15.0, "breakdown": [{"time_fmt": "30:40", "label": "1x1 def fallo", "pts": -2.2, "mult": 2.2}, {"time_fmt": "31:32", "label": "Gol 6M", "pts": 5.5, "mult": 2.2}, {"time_fmt": "31:50", "label": "1x1 def fallo", "pts": -2.2, "mult": 2.2}, {"time_fmt": "31:52", "label": "Robo", "pts": 5.5, "mult": 2.2}, {"time_fmt": "32:43", "label": "Falta táctica", "pts": 0.66, "mult": 2.2}, {"time_fmt": "33:12", "label": "Falta táctica", "pts": 0.66, "mult": 2.2}, {"time_fmt": "34:09", "label": "Asistencia (→ GOL)", "pts": 2.2, "mult": 2.2}, {"time_fmt": "35:08", "label": "Asistencia", "pts": 0.94, "mult": 1.87}, {"time_fmt": "36:53", "label": "Fallo EXTREMO", "pts": -1.32, "mult": 2.2}, {"time_fmt": "37:27", "label": "Gol 9M", "pts": 6.54, "mult": 1.87}, {"time_fmt": "39:02", "label": "1x1 def fallo", "pts": -1.54, "mult": 1.54}, {"time_fmt": "40:54", "label": "1x1 def fallo", "pts": -2.21, "mult": 2.21}, {"time_fmt": "41:53", "label": "Falta táctica", "pts": 0.66, "mult": 2.21}, {"time_fmt": "42:39", "label": "Fallo 6M", "pts": -1.95, "mult": 2.6}, {"time_fmt": "44:14", "label": "Falta táctica", "pts": 0.66, "mult": 2.21}]}, "88-DAVID": {"val_raw": 4.9, "val_norm": 3.27, "minutes": 15.0, "breakdown": [{"time_fmt": "30:43", "label": "Provoca 7M", "pts": -3.3, "mult": 2.2}, {"time_fmt": "33:09", "label": "1x1 def éxito", "pts": 2.2, "mult": 2.2}, {"time_fmt": "35:25", "label": "1x1 def éxito", "pts": 1.87, "mult": 1.87}, {"time_fmt": "36:09", "label": "Fallo 9M", "pts": -1.96, "mult": 1.87}, {"time_fmt": "37:25", "label": "Asistencia (→ GOL)", "pts": 2.2, "mult": 2.2}, {"time_fmt": "37:54", "label": "Robo", "pts": 4.68, "mult": 1.87}, {"time_fmt": "41:27", "label": "Asistencia (→ GOL)", "pts": 2.6, "mult": 2.6}, {"time_fmt": "42:48", "label": "1x1 def fallo", "pts": -2.6, "mult": 2.6}, {"time_fmt": "43:13", "label": "1x1 def fallo", "pts": -2.6, "mult": 2.6}, {"time_fmt": "44:48", "label": "Asistencia (→ GOL)", "pts": 1.82, "mult": 1.82}]}, "04-GUILLE": {"val_raw": -8.61, "val_norm": -5.67, "minutes": 15.2, "breakdown": [{"time_fmt": "34:36", "label": "1x1 def fallo", "pts": -1.87, "mult": 1.87}, {"time_fmt": "36:20", "label": "1x1 def fallo", "pts": -1.87, "mult": 1.87}, {"time_fmt": "38:34", "label": "Gol 7M", "pts": 2.31, "mult": 1.54}, {"time_fmt": "40:04", "label": "Pérdida", "pts": -3.31, "mult": 2.21}, {"time_fmt": "42:11", "label": "1x1 def fallo", "pts": -2.21, "mult": 2.21}, {"time_fmt": "43:49", "label": "Fallo 6M", "pts": -1.66, "mult": 2.21}]}}, "goalkeepers": ["96-ADRI", "01-SANTA"]};
+
+// TABS
+document.querySelectorAll('.nav-item').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    if (tab.dataset.tab === 'marcador') drawChart();
+  });
+});
+
+function zoneColor(pct) {
+  if (pct >= 70) return 'var(--green)';
+  if (pct >= 50) return 'var(--gold)';
+  if (pct >= 30) return '#e8a020';
+  return 'var(--red)';
+}
+
+// KPIs
+function buildKPIs() {
+  const zs = DATA.zone_stats;
+  let totalG=0, totalL=0;
+  Object.values(zs).forEach(z => { totalG+=z.gol; totalL+=z.total; });
+  const eff = totalL>0 ? Math.round(totalG/totalL*100) : 0;
+  const gkT = Object.values(DATA.gk_totals);
+  const totalSaved = gkT.reduce((a,b)=>a+b.paradas,0);
+  const totalShots = gkT.reduce((a,b)=>a+b.total,0);
+  const saveP = totalShots>0 ? Math.round(totalSaved/totalShots*100) : 0;
+  const ps = DATA.player_stats;
+  let totalRobos=0, totalPerdidas=0;
+  Object.values(ps).forEach(p => { totalRobos+=p.robos; totalPerdidas+=p.perdidas; });
+  const topScorer = Object.entries(ps).sort((a,b)=>b[1].goles-a[1].goles)[0];
+  const topName = topScorer[0].split('-').slice(1).join('-');
+  // Team average VAL (field players only, exclude goalkeepers)
+  const gks = new Set(DATA.goalkeepers || []);
+  const ratEntries = Object.entries(DATA.ratings || {}).filter(([k]) => !gks.has(k));
+  const teamAvgVal = ratEntries.length > 0
+    ? (ratEntries.reduce((s,[,r]) => s + r.val_norm, 0) / ratEntries.length).toFixed(1)
+    : '—';
+  const avgColor = parseFloat(teamAvgVal)>=5?'var(--green)':parseFloat(teamAvgVal)>=2?'var(--gold)':'var(--muted)';
+
+  const cards = [
+    {val:eff+'%', label:'Eficacia ataque', sub:totalG+'/'+totalL+' tiros'},
+    {val:saveP+'%', label:'% Paradas', sub:totalSaved+'/'+totalShots+' paradas'},
+    {val:totalRobos, label:'Robos', sub:'total equipo'},
+    {val:topScorer[1].goles, label:'Máx goleador', sub:topName},
+    {val:totalPerdidas, label:'Pérdidas', sub:'total equipo'},
+    {val:parseInt(DATA.resultado)-DATA.halftime.our, label:'Goles 2ª parte', sub:'nuestros'},
+  ];
+  // Prepend team avg as first card with dynamic color
+  const avgCard = '<div class="kpi-card" style="border-color:'+avgColor+';background:rgba(255,255,255,0.04)">'
+    + '<div class="kpi-value" style="color:'+avgColor+'">'+teamAvgVal+'</div>'
+    + '<div class="kpi-label">VAL medio equipo</div>'
+    + '<div class="kpi-sub">por 10 min jugados</div>'
+    + '</div>';
+
+  const _kg = document.getElementById('kpiGrid'); if (!_kg) return; _kg.innerHTML = avgCard + cards.map(c =>
+    `<div class="kpi-card"><div class="kpi-value">${c.val}</div>
+    <div class="kpi-label">${c.label}</div>
+    ${c.sub?`<div class="kpi-sub">${c.sub}</div>`:''}</div>`
+  ).join('');
+}
+
+function buildZones(id) {
+  const zs = DATA.zone_stats;
+  const order = ['Contra','Ext. Izq','Ext. Der','7M','6M','9M'];
+  const labels = {Contra:'Contras','Ext. Izq':'Ext. Izquierdo','Ext. Der':'Ext. Derecho','7M':'7 metros','6M':'6 metros','9M':'9 metros'};
+  document.getElementById(id).innerHTML = order.filter(z=>zs[z]).map(z => {
+    const {gol,total} = zs[z];
+    const pct = total>0 ? Math.round(gol/total*100) : 0;
+    const color = zoneColor(pct);
+    return `<div class="zone-row" data-zone="${z}" style="cursor:pointer">
+      <span class="zone-name">${labels[z]}</span>
+      <div class="zone-bar-track"><div class="zone-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <span class="zone-pct" style="color:${color}">${pct}%</span>
+      <span class="zone-count">${gol}/${total}</span>
+    </div>`;
+  }).join('');
+}
+
+// SCORE CHART
+let chartDrawn = false;
+function drawChart() {
+  if (chartDrawn) return; chartDrawn = true;
+  const canvas = document.getElementById('scoreChart'); if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.offsetWidth, H = 200;
+  canvas.width = W * window.devicePixelRatio; canvas.height = H * window.devicePixelRatio;
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  const tl = DATA.score_timeline;
+  const maxScore = Math.max(...tl.map(p=>Math.max(p.our,p.their))) + 2;
+  const pad = {l:28,r:12,t:10,b:44};
+  const w = W-pad.l-pad.r, h = H-pad.t-pad.b;
+  const sx = t => pad.l + (t/60)*w;
+  const sy = v => pad.t + h - (v/maxScore)*h;
+
+  // ── Streak bands (drawn first, below everything) ──
+  (DATA.streaks||[]).forEach(s => {
+    const x1 = sx(s.time_start), x2 = sx(s.time_end);
+    ctx.fillStyle = s.type === 'our' ? 'rgba(46,204,113,0.12)' : 'rgba(231,76,60,0.10)';
+    ctx.fillRect(x1, pad.t, x2 - x1, h);
+  });
+
+  // ── Grid lines ──
+  ctx.strokeStyle='rgba(255,255,255,.05)'; ctx.lineWidth=1;
+  for (let v=0;v<=maxScore;v+=10) {
+    ctx.beginPath(); ctx.moveTo(pad.l,sy(v)); ctx.lineTo(pad.l+w,sy(v)); ctx.stroke();
+    ctx.fillStyle='rgba(136,153,176,.7)'; ctx.font='9px system-ui'; ctx.fillText(v,2,sy(v)+3);
+  }
+
+  // ── Halftime line ──
+  ctx.strokeStyle='rgba(240,165,0,.25)'; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(sx(30),pad.t); ctx.lineTo(sx(30),pad.t+h); ctx.stroke();
+  ctx.setLineDash([]); ctx.fillStyle='rgba(240,165,0,.5)'; ctx.font='8px system-ui';
+  ctx.fillText("ET", sx(30)+3, pad.t+10);
+
+  // ── Minute labels (lowered to make room for event strip) ──
+  [0,10,20,30,40,50,60].forEach(t => {
+    ctx.fillStyle='rgba(136,153,176,.7)'; ctx.font='9px system-ui';
+    ctx.fillText(t+"'", sx(t)-6, pad.t+h+36);
+  });
+
+  // ── Score area gradient fill ──
+  ctx.beginPath(); ctx.moveTo(sx(0),sy(0));
+  tl.forEach(p => ctx.lineTo(sx(p.t),sy(p.our)));
+  ctx.lineTo(sx(tl[tl.length-1].t),pad.t+h); ctx.lineTo(sx(0),pad.t+h); ctx.closePath();
+  const grad = ctx.createLinearGradient(0,pad.t,0,pad.t+h);
+  grad.addColorStop(0,'rgba(240,165,0,.15)'); grad.addColorStop(1,'rgba(240,165,0,0)');
+  ctx.fillStyle=grad; ctx.fill();
+
+  // ── Score lines ──
+  function drawLine(color, key) {
+    ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(sx(0),sy(0));
+    tl.forEach(p => ctx.lineTo(sx(p.t),sy(p[key]))); ctx.stroke();
+  }
+  drawLine('rgba(136,153,176,.7)','their'); drawLine('#f0a500','our');
+
+  // ── Event strip ──
+  const evY = pad.t + h + 18;
+  ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t+h+4); ctx.lineTo(pad.l+w, pad.t+h+4); ctx.stroke();
+
+  function drawDot(x, color, letter) {
+    ctx.beginPath(); ctx.arc(x, evY, 5.5, 0, Math.PI*2);
+    ctx.fillStyle = color; ctx.fill();
+    if (letter) {
+      ctx.fillStyle = '#0d1b2a'; ctx.font = 'bold 6px system-ui';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(letter, x, evY);
+      ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    }
+  }
+  function drawTriUp(x, color) {
+    ctx.beginPath(); ctx.moveTo(x, evY-6); ctx.lineTo(x+5, evY+4); ctx.lineTo(x-5, evY+4);
+    ctx.closePath(); ctx.fillStyle = color; ctx.fill();
+  }
+  function drawTriDown(x, color) {
+    ctx.beginPath(); ctx.moveTo(x, evY+6); ctx.lineTo(x+5, evY-4); ctx.lineTo(x-5, evY-4);
+    ctx.closePath(); ctx.fillStyle = color; ctx.fill();
+  }
+
+  (DATA.timeouts||[]).forEach(t => drawDot(sx(t.time), t.rival ? 'rgba(136,153,176,0.85)' : '#f0a500', 'T'));
+  (DATA.sanctions||[]).forEach(s => drawTriUp(sx(s.time), '#2ecc71'));
+  (DATA.our_excl||[]).forEach(e => drawTriDown(sx(e.time), e.type==='amarilla' ? '#f0a500' : '#e74c3c'));
+}
+
+// PLAYERS
+// ── Sortable table state ────────────────────────────────────────────
+const sortState = {
+  atk: { col: 'goles', dir: -1 },
+  def: { col: 'robos', dir: -1 },
+};
+
+function sortIndicator(tableId, col) {
+  const st = sortState[tableId];
+  if (st.col !== col) return '<span class="sort-arrow inactive">↕</span>';
+  return '<span class="sort-arrow">' + (st.dir === -1 ? '↓' : '↑') + '</span>';
+}
+
+function renderPlayers() {
+  const ps = DATA.player_stats;
+  const st = sortState.atk;
+  const getVal = (key, s) => {
+    if (st.col === 'dorsal')  return parseInt(key.split('-')[0]);
+    if (st.col === 'nombre')  return key.split('-').slice(1).join('-').toLowerCase();
+    if (st.col === 'goles')   return s.goles;
+    if (st.col === 'ef')      return s.lanzamientos > 0 ? s.goles / s.lanzamientos : 0;
+    if (st.col === 'asist')   return s.asistencias;
+    if (st.col === 'perd')    return s.perdidas;
+    if (st.col === 'val') {
+      const isGK = (DATA.goalkeepers||[]).includes(key);
+      const rat  = DATA.ratings && DATA.ratings[key];
+      return (!isGK && rat) ? rat.val_norm : -999;
+    }
+    return 0;
+  };
+
+  const shooters = Object.entries(ps)
+    .filter(([k,v]) => v.lanzamientos > 0)
+    .sort((a, b) => {
+      const va = getVal(a[0], a[1]), vb = getVal(b[0], b[1]);
+      if (typeof va === 'string') return st.dir * va.localeCompare(vb);
+      return st.dir * (vb - va);
+    });
+
+  document.getElementById('playerBody').innerHTML = shooters.map(([key, s]) => {
+    const eff = s.lanzamientos > 0 ? Math.round(s.goles / s.lanzamientos * 100) : 0;
+    const color = zoneColor(eff);
+    const parts = key.split('-'); const num = parts[0]; const nm = parts.slice(1).join('-');
+    const isGK = (DATA.goalkeepers||[]).includes(key);
+    const rat = DATA.ratings && DATA.ratings[key];
+    const valStr   = (!isGK && rat) ? rat.val_norm.toFixed(1) : '—';
+    const valColor = (!isGK && rat)
+      ? (rat.val_norm>=6?'var(--green)':rat.val_norm>=3?'var(--gold)':rat.val_norm>=0?'var(--muted)':'var(--red)')
+      : 'var(--muted)';
+    return '<tr data-player-key="' + key + '" style="cursor:pointer">'
+      + '<td><span class="player-num">#' + num + '</span><span class="player-name">' + nm + '</span></td>'
+      + '<td style="font-weight:800;font-size:16px;color:var(--gold2)">' + s.goles + '</td>'
+      + '<td><div class="eff-bar"><div class="eff-fill" style="width:' + eff + '%;background:' + color + '"></div>'
+      + '<div class="eff-text">' + eff + '%</div></div></td>'
+      + '<td style="color:var(--blue);font-weight:700">' + s.asistencias + '</td>'
+      + '<td style="color:' + (s.perdidas>1?'var(--red)':'var(--muted)') + ';font-weight:' + (s.perdidas>0?700:400) + '">' + s.perdidas + '</td>'
+      + '<td style="color:' + valColor + ';font-weight:800;font-size:14px">' + valStr + '</td>'
+      + '</tr>';
+  }).join('');
+  addRowClickHandlers();
+}
+
+function buildPlayers() {
+  // Render headers with sort indicators
+  document.getElementById('atkHead').innerHTML =
+      '<th><span class="sortable" data-table="atk" data-col="dorsal"># ' + sortIndicator('atk','dorsal') + '</span> <span class="sortable" data-table="atk" data-col="nombre">Nombre ' + sortIndicator('atk','nombre') + '</span></th>'
+    + '<th class="sortable" data-table="atk" data-col="goles">Goles ' + sortIndicator('atk','goles') + '</th>'
+    + '<th class="sortable" data-table="atk" data-col="ef">Ef. ' + sortIndicator('atk','ef') + '</th>'
+    + '<th class="sortable" data-table="atk" data-col="asist">Asis. ' + sortIndicator('atk','asist') + '</th>'
+    + '<th class="sortable" data-table="atk" data-col="perd">Pérd. ' + sortIndicator('atk','perd') + '</th>'
+    + '<th class="sortable" data-table="atk" data-col="val">VAL ' + sortIndicator('atk','val') + '</th>';
+  renderPlayers();
+}
+
+function renderDefense() {
+  const ps = DATA.player_stats;
+  const st = sortState.def;
+  const getVal = (key, s) => {
+    if (st.col === 'dorsal')  return parseInt(key.split('-')[0]);
+    if (st.col === 'nombre')  return key.split('-').slice(1).join('-').toLowerCase();
+    if (st.col === 'robos')   return s.robos;
+    if (st.col === 'x1ok')    return s['1x1_exito'];
+    if (st.col === 'x1ko')    return s['1x1_fallo'];
+    if (st.col === 'faltas')  return s.faltas_def;
+    return 0;
+  };
+
+  const defenders = Object.entries(ps)
+    .filter(([k,v]) => v['1x1_exito']+v['1x1_fallo']+v.robos+v.faltas_def > 0)
+    .sort((a, b) => {
+      const va = getVal(a[0], a[1]), vb = getVal(b[0], b[1]);
+      if (typeof va === 'string') return st.dir * va.localeCompare(vb);
+      return st.dir * (vb - va);
+    });
+
+  const rows = defenders.map(([key, s]) => {
+    const parts = key.split('-'); const num = parts[0]; const nm = parts.slice(1).join('-').trim();
+    return '<tr data-player-key="' + key + '" style="cursor:pointer">'
+      + '<td><span class="player-num">#' + num + '</span><span class="player-name">' + nm + '</span></td>'
+      + '<td style="color:var(--green);font-weight:800;font-size:15px">' + (s.robos||'—') + '</td>'
+      + '<td style="color:var(--blue);font-weight:700">' + s['1x1_exito'] + '</td>'
+      + '<td style="color:' + (s['1x1_fallo']>0?'var(--red)':'var(--muted)') + ';font-weight:700">' + s['1x1_fallo'] + '</td>'
+      + '<td style="color:var(--muted);font-weight:700">' + (s.faltas_def||'—') + '</td>'
+      + '</tr>';
+  }).join('');
+
+  document.getElementById('defGrid').innerHTML =
+      '<table class="player-table"><thead><tr id="defHead">'
+    + '<th><span class="sortable" data-table="def" data-col="dorsal"># ' + sortIndicator('def','dorsal') + '</span> <span class="sortable" data-table="def" data-col="nombre">Nombre ' + sortIndicator('def','nombre') + '</span></th>'
+    + '<th class="sortable" data-table="def" data-col="robos" style="color:var(--green)">Robos ' + sortIndicator('def','robos') + '</th>'
+    + '<th class="sortable" data-table="def" data-col="x1ok" style="color:var(--blue)">1x1 ✓ ' + sortIndicator('def','x1ok') + '</th>'
+    + '<th class="sortable" data-table="def" data-col="x1ko" style="color:var(--red)">1x1 ✗ ' + sortIndicator('def','x1ko') + '</th>'
+    + '<th class="sortable" data-table="def" data-col="faltas" style="color:var(--muted)">Faltas ' + sortIndicator('def','faltas') + '</th>'
+    + '</tr></thead><tbody>' + rows + '</tbody></table>';
+  addRowClickHandlers();
+}
+
+function buildDefense() {
+  renderDefense();
+}
+
+// Sort click handler (delegated)
+document.addEventListener('click', function(e) {
+  const th = e.target.closest('.sortable');
+  if (!th) return;
+  const tableId = th.dataset.table;
+  const col     = th.dataset.col;
+  const st      = sortState[tableId];
+  if (st.col === col) {
+    st.dir *= -1;  // flip direction
+  } else {
+    st.col = col;
+    st.dir = (col === 'nombre' || col === 'dorsal') ? 1 : -1;  // names/dorsal asc, stats desc by default
+  }
+  if (tableId === 'atk') buildPlayers();
+  if (tableId === 'def') renderDefense();
+});
+
+
+// GOALKEEPER SECTION
+function buildGoalkeepers() {
+  const gkDetail = DATA.gk_detail;
+  const gkTotals = DATA.gk_totals;
+  const porteros = Object.keys(gkTotals);
+  const selector = document.getElementById('gkSelector');
+  const views = document.getElementById('gkViews');
+
+  // Zone display config
+  // Layout: portería de balonmano dividida en zonas de origen del lanzamiento
+  const zoneConfig = [
+    { key: '6M',      label: '6 metros',    icon: '🔴' },
+    { key: '9M',      label: '9 metros',    icon: '🟡' },
+    { key: 'EXT_IZQ', label: 'Ext. Izq.',   icon: '◀' },
+    { key: 'EXT_DER', label: 'Ext. Der.',   icon: '▶' },
+    { key: 'CONTRA',  label: 'Contras',     icon: '⚡' },
+    { key: '7M',      label: '7 metros',    icon: '⚪' },
+  ];
+
+  // Build selector buttons
+  const allIds = porteros.length > 1 ? ['TODOS', ...porteros] : porteros;
+  selector.innerHTML = allIds.map((p, i) => {
+    const label = p === 'TODOS' ? 'Todos' : '#' + p.split('-')[0] + ' ' + p.split('-').slice(1).join('-');
+    return `<div class="gk-btn ${i===0?'active':''}" data-gk="${p}">${label}</div>`;
+  }).join('');
+
+  // Build views for each portero + combined
+  function mergeData(keys) {
+    const merged = {};
+    zoneConfig.forEach(z => {
+      merged[z.key] = { gol:0, parada:0, fallo:0, total:0 };
+    });
+    keys.forEach(k => {
+      const detail = gkDetail[k] || {};
+      zoneConfig.forEach(z => {
+        if (detail[z.key]) {
+          merged[z.key].gol += detail[z.key].gol || 0;
+          merged[z.key].parada += detail[z.key].parada || 0;
+          merged[z.key].fallo += detail[z.key].fallo || 0;
+          merged[z.key].total += detail[z.key].total || 0;
+        }
+      });
+    });
+    return merged;
+  }
+
+  function buildGKView(id, keys, label) {
+    const data = mergeData(keys);
+    const tot = keys.reduce((a,k) => ({
+      paradas: a.paradas + (gkTotals[k]?.paradas||0),
+      total: a.total + (gkTotals[k]?.total||0)
+    }), {paradas:0,total:0});
+    const overallPct = tot.total > 0 ? Math.round(tot.paradas/tot.total*100) : 0;
+    const pctColor = overallPct >= 40 ? 'var(--green)' : overallPct >= 25 ? 'var(--gold)' : 'var(--red)';
+
+    // Goal frame SVG
+    // Handball goal: 3m wide x 2m tall
+    // Zones: we show 6 source zones as colored cells inside the frame
+    // Frame cells: EXT_IZQ | 9M-left | 6M-center | 9M-right | EXT_DER across top
+    //              CONTRA bottom strip, 7M separate badge
+
+    // Build bars for each zone
+    let maxGols = Math.max(...zoneConfig.map(z => (data[z.key]?.gol||0) + (data[z.key]?.parada||0)));
+    if (maxGols === 0) maxGols = 1;
+
+    const zonesHtml = zoneConfig.map(z => {
+      const zd = data[z.key];
+      if (!zd || zd.total === 0) return '';
+      const savePct = zd.total > 0 ? Math.round(zd.parada/zd.total*100) : 0;
+      const goalPct = zd.total > 0 ? Math.round(zd.gol/zd.total*100) : 0;
+      const goalBarW = Math.round((zd.gol / maxGols) * 100);
+      const paradaBarW = Math.round((zd.parada / maxGols) * 100);
+      const isDanger = goalPct > 60;
+      const isSafe = savePct >= 50;
+      const rowClass = isDanger ? 'danger' : isSafe ? 'safe' : '';
+      const savColor = savePct >= 50 ? 'var(--green)' : savePct >= 30 ? 'var(--gold)' : 'var(--red)';
+      const golColor = goalPct >= 60 ? 'var(--red)' : goalPct >= 40 ? '#e8a020' : 'var(--muted)';
+      return `<div class="gk-zone-row ${rowClass}">
+        <div class="gz-name">${z.icon} ${z.label}</div>
+        <div class="gz-bars">
+          <div class="gz-bar-row">
+            <span style="min-width:38px;color:var(--red);font-size:9px">Goles ${zd.gol}</span>
+            <div class="gz-bar-track"><div class="gz-bar-inner" style="width:${goalBarW}%;background:var(--red)"></div></div>
+          </div>
+          <div class="gz-bar-row">
+            <span style="min-width:38px;color:var(--green);font-size:9px">Paradas ${zd.parada}</span>
+            <div class="gz-bar-track"><div class="gz-bar-inner" style="width:${paradaBarW}%;background:var(--green)"></div></div>
+          </div>
+        </div>
+        <div class="gz-stats" style="color:${savColor}">${savePct}%</div>
+      </div>`;
+    }).filter(Boolean).join('');
+
+    // Goal frame SVG: visual map
+    // 3 cols x 3 rows grid representing the goal
+    // Cols: left third, center, right third
+    // Rows: upper, middle, lower
+    // We color each cell by % of goals conceded from that area
+    // Mapping: EXT_IZQ=far left zone (outside frame), EXT_DER=far right
+    // 6M=center col all rows, 9M=left+right center
+    // For the frame, let's show:
+    // Row top: [EXT_IZQ zone outside] [9M - top L] [9M - top C] [9M - top R] [EXT_DER zone outside]
+    // We simplify to a 3x2 goal map + flanks
+
+    // Cells we draw inside the goal frame (3 cols x 2 rows)
+    // Top-left: 9M shots (paradas mostly here)
+    // Top-center: same
+    // Bottom-center: 6M (most dangerous)
+    // Flanks outside: EXT
+
+    const frameData = {
+      // [row][col] -> zone key
+      cells: [
+        ['9M',   '9M',  '9M'],
+        ['6M',   '6M',  '6M'],
+      ],
+      flanks: { left: 'EXT_IZQ', right: 'EXT_DER' }
+    };
+
+    function cellColor(zkey, alpha=0.7) {
+      const zd = data[zkey];
+      if (!zd || zd.total === 0) return `rgba(255,255,255,0.04)`;
+      const gp = zd.gol / zd.total;
+      if (gp >= 0.7) return `rgba(231,76,60,${alpha})`;
+      if (gp >= 0.5) return `rgba(231,76,60,${alpha*0.6})`;
+      if (gp >= 0.3) return `rgba(240,165,0,${alpha*0.6})`;
+      return `rgba(46,204,113,${alpha*0.5})`;
+    }
+
+    function cellLabel(zkey) {
+      const zd = data[zkey];
+      if (!zd || zd.total === 0) return '';
+      const pct = Math.round(zd.parada / zd.total * 100);
+      return `${zd.parada}P/${zd.gol}G`;
+    }
+
+    // SVG goal frame
+    const W=280, H=130;
+    const gL=40, gR=W-40, gT=10, gB=H-20;  // goal frame coords
+    const gW=gR-gL, gH=gB-gT;
+    const col = gW/3;
+    const row = gH/2;
+
+    // Cell fill colors for 9M (top row) and 6M (bottom row)
+    const c9 = data['9M'] || {gol:0,parada:0,total:0};
+    const c6 = data['6M'] || {gol:0,parada:0,total:0};
+    const cEl = data['EXT_IZQ'] || {gol:0,parada:0,total:0};
+    const cEr = data['EXT_DER'] || {gol:0,parada:0,total:0};
+    const cCt = data['CONTRA'] || {gol:0,parada:0,total:0};
+    const c7 = data['7M'] || {gol:0,parada:0,total:0};
+
+    function pctColor2(zd) {
+      if (!zd || zd.total===0) return 'rgba(255,255,255,0.06)';
+      const gp = zd.gol/zd.total;
+      if (gp>=0.7) return 'rgba(231,76,60,0.55)';
+      if (gp>=0.5) return 'rgba(231,76,60,0.35)';
+      if (gp>=0.3) return 'rgba(240,165,0,0.4)';
+      return 'rgba(46,204,113,0.35)';
+    }
+    function pctTxt(zd) {
+      if (!zd||zd.total===0) return '—';
+      return `${zd.gol}G · ${zd.parada}P`;
+    }
+    function pctTxtColor(zd) {
+      if (!zd||zd.total===0) return '#556';
+      const gp=zd.gol/zd.total;
+      if (gp>=0.5) return '#ff6b6b';
+      if (gp>=0.3) return '#ffc740';
+      return '#2ecc71';
+    }
+
+    const svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">
+  <defs>
+    <filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/></filter>
+  </defs>
+
+  <!-- Ground line -->
+  <line x1="0" y1="${gB}" x2="${W}" y2="${gB}" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+
+  <!-- EXT IZQ flank -->
+  <rect x="2" y="${gT}" width="${gL-4}" height="${gH}" rx="4"
+    fill="${pctColor2(cEl)}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="${(gL)/2}" y="${gT+gH/2-8}" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.5)">EXT</text>
+  <text x="${(gL)/2}" y="${gT+gH/2+4}" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.5)">IZQ</text>
+  <text x="${(gL)/2}" y="${gT+gH/2+16}" text-anchor="middle" font-size="8" fill="${pctTxtColor(cEl)}">${pctTxt(cEl)}</text>
+
+  <!-- EXT DER flank -->
+  <rect x="${gR+2}" y="${gT}" width="${gL-4}" height="${gH}" rx="4"
+    fill="${pctColor2(cEr)}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="${gR+(W-gR)/2}" y="${gT+gH/2-8}" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.5)">EXT</text>
+  <text x="${gR+(W-gR)/2}" y="${gT+gH/2+4}" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.5)">DER</text>
+  <text x="${gR+(W-gR)/2}" y="${gT+gH/2+16}" text-anchor="middle" font-size="8" fill="${pctTxtColor(cEr)}">${pctTxt(cEr)}</text>
+
+  <!-- Goal frame outline -->
+  <rect x="${gL}" y="${gT}" width="${gW}" height="${gH}" rx="2"
+    fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+
+  <!-- Top row: 9M (3 cells) -->
+  ${[0,1,2].map(i=>`
+  <rect x="${gL+i*col+1}" y="${gT+1}" width="${col-2}" height="${row-2}" rx="2"
+    fill="${pctColor2(c9)}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  `).join('')}
+  <text x="${gL+gW/2}" y="${gT+row/2-4}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.45)">9 metros</text>
+  <text x="${gL+gW/2}" y="${gT+row/2+8}" text-anchor="middle" font-size="10" font-weight="bold" fill="${pctTxtColor(c9)}">${pctTxt(c9)}</text>
+
+  <!-- Bottom row: 6M (3 cells) -->
+  ${[0,1,2].map(i=>`
+  <rect x="${gL+i*col+1}" y="${gT+row+1}" width="${col-2}" height="${row-2}" rx="2"
+    fill="${pctColor2(c6)}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  `).join('')}
+  <text x="${gL+gW/2}" y="${gT+row+row/2-4}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.45)">6 metros</text>
+  <text x="${gL+gW/2}" y="${gT+row+row/2+8}" text-anchor="middle" font-size="10" font-weight="bold" fill="${pctTxtColor(c6)}">${pctTxt(c6)}</text>
+
+  <!-- Contra badge bottom -->
+  ${cCt.total>0 ? `
+  <rect x="${gL+10}" y="${gB+4}" width="80" height="16" rx="4"
+    fill="${pctColor2(cCt)}" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="${gL+50}" y="${gB+15}" text-anchor="middle" font-size="8" fill="${pctTxtColor(cCt)}">⚡ Contras: ${pctTxt(cCt)}</text>
+  ` : ''}
+
+  <!-- 7M badge bottom right -->
+  ${c7.total>0 ? `
+  <rect x="${gL+gW-90}" y="${gB+4}" width="70" height="16" rx="4"
+    fill="${pctColor2(c7)}" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="${gL+gW-55}" y="${gB+15}" text-anchor="middle" font-size="8" fill="${pctTxtColor(c7)}">7m: ${pctTxt(c7)}</text>
+  ` : ''}
+
+  <!-- Legend -->
+  <rect x="${W-110}" y="2" width="9" height="9" rx="2" fill="rgba(231,76,60,0.5)"/>
+  <text x="${W-98}" y="10" font-size="8" fill="rgba(255,255,255,0.4)">Zona peligrosa</text>
+  <rect x="${W-110}" y="14" width="9" height="9" rx="2" fill="rgba(46,204,113,0.35)"/>
+  <text x="${W-98}" y="22" font-size="8" fill="rgba(255,255,255,0.4)">Zona segura</text>
+</svg>`;
+
+    return '<div class="gk-view" id="gkv-'+id+'">'
+      +'<div class="gk-overall-bar">'
+      +'<div class="gk-ov-pct" style="color:'+pctColor+'">'+overallPct+'%</div>'
+      +'<div class="gk-ov-detail">'
+      +'<div class="gk-ov-name">'+label+'</div>'
+      +'<div class="gk-ov-sub">'+tot.paradas+' paradas de '+tot.total+' tiros</div>'
+      +'</div></div>'
+      +'<div class="gk-zone-bars">'+zonesHtml+'</div>'
+      +'</div>';
+  }
+
+  let viewsHtml = '';
+  if (porteros.length > 1) {
+    viewsHtml += buildGKView('TODOS', porteros, 'Ambos porteros');
+  }
+  porteros.forEach(p => {
+    const parts = p.split('-'); const num=parts[0]; const nm=parts.slice(1).join('-').trim();
+    viewsHtml += buildGKView(p, [p], `#${num} ${nm}`);
+  });
+  views.innerHTML = viewsHtml;
+
+  // Activate first view
+  const firstId = porteros.length > 1 ? 'TODOS' : porteros[0];
+  document.getElementById('gkv-' + firstId)?.classList.add('active');
+
+  // Selector clicks
+  document.querySelectorAll('.gk-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.gk-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.gk-view').forEach(v=>v.classList.remove('active'));
+      btn.classList.add('active');
+      const gkId = btn.dataset.gk;
+      document.getElementById('gkv-' + gkId)?.classList.add('active');
+    });
+  });
+}
+
+// STREAKS
+function buildStreaks() {
+  const _sl = document.getElementById('streaksList'); if (!_sl) return; _sl.innerHTML = DATA.streaks.map(s => {
+    const isOur = s.type==='our';
+    const color = isOur ? 'var(--gold)' : 'var(--red)';
+    const icon = isOur ? (s.count >= 5 ? '🔥' : '✅') : (s.count >= 5 ? '🚨' : '⚠️');
+    const label = isOur ? `Parcial ${s.count}-0 nuestro` : `Parcial 0-${s.count} rival`;
+    return '<div class="streak-item">'
+      +'<div class="streak-icon">'+icon+'</div>'
+      +'<div class="streak-body">'
+      +'<div class="streak-title" style="color:'+color+'">'+label+'</div>'
+      +'<div class="streak-meta">'+s.time_start_fmt+' – '+s.time_end_fmt+'</div>'
+      +'</div>'
+      +'<div class="streak-score">'+s.score_start+' → '+s.score_end+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+// EVENTS
+function buildEvents() {
+  let events = [];
+  DATA.timeouts.forEach(t => events.push({
+    time:t.time, time_fmt:t.time_fmt, text:t.rival?'Tiempo muerto rival':'Tiempo muerto nuestro',
+    score:t.score, tag:'timeout', tagText:'T.muerto'
+  }));
+  DATA.sanctions.forEach(s => events.push({
+    time:s.time, time_fmt:s.time_fmt, text:'2 minutos rival', score:s.score, tag:'sanction', tagText:'2 min'
+  }));
+  (DATA.our_excl||[]).forEach(e => {
+    const icons = {'2min':'✌️', 'amarilla':'🟨', 'roja':'🟥'};
+    const labels = {'2min':'2 min', 'amarilla':'Amarilla', 'roja':'T. Roja'};
+    events.push({
+      time:e.time, time_fmt:e.time_fmt,
+      text: icons[e.type] + ' ' + labels[e.type] + ' — ' + e.player,
+      score:e.score, tag:'our_excl',
+      tagText: labels[e.type]
+    });
+  });
+  events.sort((a,b)=>a.time-b.time);
+  const _el = document.getElementById('eventsList'); if (!_el) return; _el.innerHTML = events.map(e =>
+    '<div class="event-item">'
+    +'<div class="event-time">'+(e.time_fmt||Math.floor(e.time)+"'")+'</div>'
+    +'<div class="event-text">'+e.text+'</div>'
+    +'<div class="event-score">'+e.score+'</div>'
+    +'<div class="event-tag '+(e.tag==='timeout'?'tag-timeout':e.tag==='our_excl'?'tag-our-excl':'tag-sanction')+'">'+e.tagText+'</div>'
+    +'</div>'
+  ).join('');
+}
+
+
+// PLAYER MODAL
+function openPlayerModal(playerKey) {
+  const pd = DATA.player_detail[playerKey];
+  if (!pd) return;
+
+  document.getElementById('modalNum').textContent = '#' + pd.num;
+  document.getElementById('modalName').textContent = pd.name;
+
+  // KPIs — all available stats
+  const atkPct = pd.atk_total > 0 ? Math.round(pd.atk_good / pd.atk_total * 100) : 0;
+  const defPct = pd.def_total > 0 ? Math.round(pd.def_good / pd.def_total * 100) : 0;
+  const atkColor = zoneColor(atkPct);
+  const defColor = zoneColor(defPct);
+  const ps = DATA.player_stats[playerKey] || {};
+  const goles = ps.goles || 0, lanz = ps.lanzamientos || 0;
+  const asistencias = ps.asistencias || 0, perdidas = ps.perdidas || 0;
+  const robos = ps.robos || 0, bloqueos = ps.bloqueos || 0;
+  const x1e = ps['1x1_exito'] || 0, x1f = ps['1x1_fallo'] || 0;
+  const x1t = x1e + x1f, x1p = x1t > 0 ? Math.round(x1e/x1t*100) : null;
+  const faltas = ps.faltas_def || 0;
+  function kpi(val, label, color) {
+    return '<div class="modal-kpi"><div class="modal-kpi-val"' + (color?' style="color:'+color+'"':'') + '>' + val + '</div>'
+      + '<div class="modal-kpi-label">' + label + '</div></div>';
+  }
+  function kpiIf(val, label, color) { return val > 0 ? kpi(val, label, color) : ''; }
+  document.getElementById('modalKpis').innerHTML =
+      kpi(pd.minutes_fmt||pd.minutes+"'", 'En pista', '')
+    + kpi(atkPct+'%', 'Ef. ataque', atkColor)
+    + kpi(defPct+'%', 'Ef. defensa', defColor)
+    + kpi(goles, 'Goles', goles>0?'var(--gold2)':'')
+    + kpi(lanz>0?goles+'/'+lanz:'—', 'Lanz.', '')
+    + kpiIf(asistencias, 'Asist.', 'var(--blue)')
+    + kpiIf(perdidas, 'Pérdidas', 'var(--red)')
+    + kpiIf(robos, 'Robos', 'var(--green)')
+    + kpiIf(bloqueos, 'Bloqueos', 'var(--gold)')
+    + (x1t>0 ? kpi(x1p+'%','1x1 def', x1p>=50?'var(--green)':'var(--red)') : '')
+    + kpiIf(faltas, 'Faltas', 'var(--muted)')
+    + (function(){
+        const isGK = (DATA.goalkeepers||[]).includes(playerKey);
+        const rat = DATA.ratings && DATA.ratings[playerKey];
+        if (isGK || !rat) return '';
+        const vc = rat.val_norm>=6?'var(--green)':rat.val_norm>=3?'var(--gold)':rat.val_norm>=0?'var(--muted)':'var(--red)';
+        return kpi(rat.val_norm.toFixed(1), 'VAL/10min', vc);
+      })();
+
+  // Exclusions (2 min nuestros - not present here but structure ready)
+  const excl = pd.actions.filter(a => a.jugada && a.jugada.toUpperCase().includes('2 MINUTOS') && !a.jugada.toUpperCase().includes('RIVAL'));
+  const exclEl = document.getElementById('modalExclusions');
+  if (excl.length > 0) {
+    exclEl.innerHTML = '<div class="modal-section-title">Exclusiones (2 min)</div>' +
+      '<div class="exclusion-list">' +
+      excl.map(e => `<div class="exclusion-item">
+        <span class="excl-time">${Math.floor(e.time)}'</span>
+        <span class="excl-score">${e.score}</span>
+      </div>`).join('') +
+      '</div>';
+  } else {
+    exclEl.innerHTML = '';
+  }
+
+  // Action log (skip substitution rows type C)
+  const acts = pd.actions.filter(a => a.type !== 'C');
+
+  function actionIcon(a) {
+    const j = (a.jugada || '').toLowerCase();
+    const r = (a.resultado || '').toLowerCase();
+    if (j.includes('lanzamiento')) return r === 'gol' ? '⚽' : r.includes('parada') ? '🧤' : '💨';
+    if (j === 'asistencia') return '🎯';
+    if (j === 'robo') return '🤿';
+    if (j === 'perdida') return '❌';
+    if (j === 'falta') return '✋';
+    if (j.includes('1x1 def exito')) return '🛡️';
+    if (j.includes('1x1 def fallo')) return '⚠️';
+    if (j === 'bloc') return '🚫';
+    if (j === 'ayuda') return '🤝';
+    if (j === 'robo') return '💪';
+    return '•';
+  }
+
+  function actionLabel(a) {
+    const j = (a.jugada || '');
+    const r = (a.resultado || '');
+    let label = j;
+    if (r) label += ' — ' + r;
+    return label;
+  }
+
+  function resultClass(a) {
+    const r = (a.resultado || '').toLowerCase();
+    const j = (a.jugada || '').toLowerCase();
+    if (r === 'gol' || r === 'exito' || j.includes('exito') || j === 'robo' || j === 'bloc') return 'good';
+    if (r.includes('parada') || r === 'fallo' || j.includes('fallo') || j === 'perdida') return 'bad';
+    return '';
+  }
+
+  // Build rating lookup map: time_fmt → pts
+  const rat = DATA.ratings && DATA.ratings[playerKey];
+  const ratMap = {};
+  if (rat && rat.breakdown) {
+    rat.breakdown.forEach(b => {
+      // Multiple actions can share a time — accumulate
+      ratMap[b.time_fmt] = (ratMap[b.time_fmt] || 0) + b.pts;
+    });
+  }
+
+  document.getElementById('modalActions').innerHTML = acts.map(a => {
+    const typeClass = a.type === 'A' ? 'atk' : 'def';
+    const resClass = resultClass(a);
+    let assistLine = '';
+    if (a.assist_target !== null) {
+      const goalTxt = a.assist_goal ? '⚽ GOL' : '🧤 Parada';
+      assistLine = '<div class="act-assist-line">→ ' + a.assist_target + ' · ' + goalTxt + '</div>';
+    }
+    const t = a.time_fmt || (Math.floor(a.time) + "'");
+    const icon = actionIcon(a);
+    const label = actionLabel(a);
+
+    // Rating badge for this action
+    let ratBadge = '';
+    const pts = ratMap[t];
+    if (pts !== undefined) {
+      const sign = pts >= 0 ? '+' : '';
+      const bc = pts >= 2 ? 'var(--green)' : pts >= 0 ? 'var(--muted)' : 'var(--red)';
+      ratBadge = '<span class="act-rating" style="color:' + bc + '">' + sign + pts.toFixed(1) + '</span>';
+    }
+
+    return '<div class="action-row ' + typeClass + ' ' + resClass + '">'
+      + '<span class="act-time">' + t + '</span>'
+      + '<span class="act-score">' + a.score + '</span>'
+      + '<div class="act-body">'
+      + '<div class="act-jugada">' + icon + ' ' + label + '</div>'
+      + assistLine
+      + '</div>'
+      + ratBadge
+      + '</div>';
+  }).join('');
+
+  document.getElementById('playerModal').classList.add('open');
+  document.getElementById('playerModal').scrollTop = 0;
+}
+
+document.getElementById('modalBack').addEventListener('click', () => {
+  document.getElementById('playerModal').classList.remove('open');
+});
+
+// Make player rows clickable
+function addRowClickHandlers() {
+  // no-op: using event delegation instead
+}
+
+// ZONE MODAL
+const zoneLabels = {Contra:'Contras','Ext. Izq':'Ext. Izquierdo','Ext. Der':'Ext. Derecho','7M':'7 metros','6M':'6 metros','9M':'9 metros'};
+
+function openZoneModal(zone) {
+  const zs     = DATA.zone_stats[zone] || {gol:0, total:0};
+  const detail = DATA.zone_detail[zone] || [];
+  const pct    = zs.total > 0 ? Math.round(zs.gol / zs.total * 100) : 0;
+  const pctColor = pct >= 50 ? 'var(--green)' : pct >= 33 ? 'var(--gold)' : 'var(--red)';
+
+  document.getElementById('zoneModalTitle').textContent = zoneLabels[zone] || zone;
+  document.getElementById('zoneModalSub').textContent   = `${detail.length} lanzamiento${detail.length !== 1 ? 's' : ''}`;
+
+  document.getElementById('zoneModalKpis').innerHTML =
+      '<div class="modal-kpi"><div class="modal-kpi-val" style="color:var(--gold2)">' + zs.gol + '</div><div class="modal-kpi-label">Goles</div></div>'
+    + '<div class="modal-kpi"><div class="modal-kpi-val" style="color:var(--muted)">' + (zs.total - zs.gol) + '</div><div class="modal-kpi-label">Fallos</div></div>'
+    + '<div class="modal-kpi"><div class="modal-kpi-val" style="color:' + pctColor + '">' + pct + '%</div><div class="modal-kpi-label">Eficacia</div></div>';
+
+  document.getElementById('zoneModalList').innerHTML = detail.map(s => {
+    const isGol   = s.resultado === 'GOL';
+    const resColor = isGol ? 'var(--green)' : 'var(--red)';
+    const rowClass = isGol ? 'good' : 'bad';
+    return '<div class="action-row ' + rowClass + '">'
+      + '<span class="act-time">' + s.time_fmt + '</span>'
+      + '<span class="act-body"><span class="act-jugada"><span class="player-num">#' + s.num + '</span> ' + s.name + '</span></span>'
+      + '<span style="color:' + resColor + ';font-weight:700;font-size:12px;flex-shrink:0">' + s.resultado + '</span>'
+      + '<span class="act-score">' + s.score + '</span>'
+      + '</div>';
+  }).join('');
+
+  document.getElementById('zoneModal').classList.add('open');
+  document.getElementById('zoneModal').scrollTop = 0;
+}
+
+document.getElementById('zoneModalBack').addEventListener('click', () => {
+  document.getElementById('zoneModal').classList.remove('open');
+});
+
+// Event delegation: one listener on document handles all player row clicks and zone row clicks
+document.addEventListener('click', function(e) {
+  const tr = e.target.closest('[data-player-key]');
+  if (tr) { openPlayerModal(tr.dataset.playerKey); return; }
+  const zr = e.target.closest('[data-zone]');
+  if (zr) openZoneModal(zr.dataset.zone);
+});
+
+
+// SUBTAB NAVIGATION
+document.querySelectorAll('.subtab').forEach(st => {
+  st.addEventListener('click', () => {
+    const parent = st.closest('.tab-content');
+    parent.querySelectorAll('.subtab').forEach(s => s.classList.remove('active'));
+    parent.querySelectorAll('.subtab-content').forEach(c => c.classList.remove('active'));
+    st.classList.add('active');
+    parent.querySelector('#subtab-' + st.dataset.subtab)?.classList.add('active');
+  });
+});
+
+// INIT
+buildPlayers();
+buildDefense();
+buildGoalkeepers();
+addRowClickHandlers();
+</script>
+</body>
+</html>
