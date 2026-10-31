@@ -357,6 +357,11 @@ function renderPorteros(){
   const pc = pct(a.paradas, a.total);
   h += '<div class="gk-big"><div class="pct" style="color:'+col(pc)+'">'+(pc===null?'–':pc+'%')+'</div>'
     + '<div class="d">'+a.paradas+' paradas de '+a.total+' tiros<br>⏱ '+mmss(a.min)+' en pista<br>'
+    + (function(){
+        const played = a.rows.filter(r=>r.min>0);
+        const games = sel==='TODOS' ? new Set(played.map(r=>r.cod)).size : played.length;
+        return games ? '⌀ '+mmss(a.min/games)+' por partido ('+games+(games===1?' partido':' partidos')+')<br>' : '';
+      })()
     + (a.min>0 ? (a.total/a.min*10).toFixed(1)+' tiros / 10 min' : '')+'</div></div>';
   h += '<div class="section-title">Por zona</div>';
   ZONES.forEach(z=>{
