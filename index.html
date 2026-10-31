@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Agustinos Alicante Juvenil B · 2026-27</title>
+<style>
+:root {
+  --navy:#0d1b2a; --navy2:#162032; --card:#1a2740; --card2:#1f2e4a;
+  --gold:#f0a500; --gold2:#ffc740; --green:#2ecc71; --red:#e74c3c;
+  --blue:#3a8fd1; --text:#e8edf5; --muted:#8899b0;
+  --border:rgba(240,165,0,0.18); --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--navy);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}
+body{max-width:480px;margin:0 auto;padding:0 0 40px}
+a{color:inherit;text-decoration:none}
+
+.header{background:linear-gradient(160deg,#0a1520 0%,#162032 60%,#0d1b2a 100%);
+  padding:26px 20px 18px;border-bottom:1px solid var(--border)}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.title{font-size:22px;font-weight:800;line-height:1.2}
+.title span{color:var(--gold)}
+
+.nav-grid{display:grid;grid-template-columns:repeat(6,1fr);background:var(--navy2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:5}
+.nav-item{display:flex;flex-direction:column;align-items:center;padding:10px 2px 8px;cursor:pointer;
+  border-bottom:2px solid transparent;gap:3px}
+.nav-item.active{border-bottom-color:var(--gold);background:rgba(240,165,0,.06)}
+.nav-icon{font-size:18px;line-height:1}
+.nav-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.nav-item.active .nav-label{color:var(--gold)}
+.tab{display:none}.tab.active{display:block}
+
+.filters{display:flex;gap:8px;padding:12px 16px 0}
+.filters select{flex:1;background:var(--card);color:var(--text);border:1px solid var(--border);
+  border-radius:8px;padding:8px 10px;font-size:12px}
+.section{padding:18px 16px 0}
+.section-title{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);
+  margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 6px;text-align:center}
+.kpi b{display:block;font-size:24px;font-weight:900;color:var(--gold2);line-height:1}
+.kpi small{display:block;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:4px}
+.pos{color:var(--green)!important}.neg{color:var(--red)!important}
+
+.match{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:10px 12px;margin-bottom:8px}
+.match.off{opacity:.5}
+.badge{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;flex:none}
+.badge.V{background:rgba(46,204,113,.18);color:var(--green)}
+.badge.D{background:rgba(231,76,60,.18);color:var(--red)}
+.badge.E{background:rgba(136,153,176,.2);color:var(--muted)}
+.m-main{flex:1;min-width:0}
+.m-rival{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.m-score{font-size:18px;font-weight:900;color:var(--gold2);white-space:nowrap}
+.m-arrow{color:var(--muted);font-size:16px}
+
+.subtabs{display:flex;gap:6px;margin-bottom:12px}
+.subtab{flex:1;text-align:center;padding:8px;border-radius:8px;background:var(--card);border:1px solid var(--border);
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);cursor:pointer}
+.subtab.active{background:rgba(240,165,0,.14);color:var(--gold);border-color:var(--gold)}
+
+.tbl-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{padding:8px 6px;text-align:center;white-space:nowrap}
+th{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);background:var(--card2);cursor:pointer;user-select:none}
+th.sorted{color:var(--gold)}
+th:first-child,td:first-child{text-align:left;padding-left:10px;position:sticky;left:0;background:inherit}
+td:first-child{background:var(--card)}
+tr.prow{cursor:pointer;border-top:1px solid rgba(255,255,255,.04)}
+tr.prow:active td{background:var(--card2)}
+.pn{color:var(--gold);font-weight:800;margin-right:4px}
+.val{font-weight:800;color:var(--gold2)}
+.hint{font-size:10px;color:var(--muted);padding:8px 2px}
+
+.zrow{margin-bottom:10px}
+.zhead{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.zbar{height:8px;border-radius:4px;background:var(--card2);overflow:hidden}
+.zbar i{display:block;height:100%;border-radius:4px}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{padding:6px 12px;border-radius:20px;background:var(--card);border:1px solid var(--border);
+  font-size:11px;font-weight:700;color:var(--muted);cursor:pointer}
+.chip.active{background:rgba(240,165,0,.14);color:var(--gold);border-color:var(--gold)}
+.gk-big{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px;margin-bottom:14px}
+.gk-big .pct{font-size:36px;font-weight:900}
+.gk-big .d{font-size:12px;color:var(--muted);line-height:1.5}
+
+.modal-back{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;align-items:flex-end;justify-content:center}
+.modal-back.open{display:flex}
+.modal{width:100%;max-width:480px;max-height:85vh;overflow-y:auto;background:var(--navy2);
+  border-radius:18px 18px 0 0;border:1px solid var(--border);padding:18px 16px 28px}
+.modal h3{font-size:18px;margin-bottom:2px}
+.modal .sub{font-size:11px;color:var(--muted);margin-bottom:14px}
+.close{float:right;font-size:22px;color:var(--muted);cursor:pointer;line-height:1}
+.spark{display:flex;align-items:flex-end;gap:6px;height:90px;margin:8px 0 16px;padding:0 4px}
+.spark div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+.spark i{display:block;width:100%;background:var(--gold);border-radius:4px 4px 0 0;min-height:2px}
+.spark span{font-size:9px;color:var(--muted);margin-top:3px}
+.spark em{font-size:9px;font-style:normal;color:var(--gold2);margin-bottom:2px}
+.cmp-row{display:grid;align-items:center;gap:6px;padding:7px 0;border-top:1px solid rgba(255,255,255,.05);font-size:12px}
+.cmp-lab{grid-column:1/-1;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+.cmp-cell{text-align:center;font-weight:700;padding:5px 2px;border-radius:6px;background:var(--card2)}
+.cmp-cell.best{background:rgba(240,165,0,.18);color:var(--gold2)}
+.cmp-head{display:grid;gap:6px;margin:4px 0 10px}
+.cmp-head div{text-align:center;font-size:12px;font-weight:800;padding:8px 2px;border-radius:8px;border:2px solid}
+.chart{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 8px 6px;margin-bottom:14px}
+.chart h4{font-size:11px;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;margin:0 6px 8px;font-weight:700}
+.legend{display:flex;gap:12px;font-size:10px;color:var(--muted);margin:2px 8px 6px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px}
+.empty{padding:30px 16px;text-align:center;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="eyebrow" id="eyebrow"></div>
+  <div class="title" id="title"></div>
+</div>
+<div class="nav-grid" id="nav">
+  <div class="nav-item active" data-tab="resumen"><div class="nav-icon">📊</div><div class="nav-label">Resumen</div></div>
+  <div class="nav-item" data-tab="jugadores"><div class="nav-icon">👥</div><div class="nav-label">Jugadores</div></div>
+  <div class="nav-item" data-tab="comparar"><div class="nav-icon">⚖️</div><div class="nav-label">Comparar</div></div>
+  <div class="nav-item" data-tab="porteros"><div class="nav-icon">🧤</div><div class="nav-label">Porteros</div></div>
+  <div class="nav-item" data-tab="zonas"><div class="nav-icon">🎯</div><div class="nav-label">Zonas</div></div>
+  <div class="nav-item" data-tab="evolucion"><div class="nav-icon">📈</div><div class="nav-label">Evolución</div></div>
+</div>
+<div class="filters">
+  <select id="fComp"></select>
+  <select id="fCond">
+    <option value="all">Local y visitante</option>
+    <option value="local">Solo local</option>
+    <option value="visitante">Solo visitante</option>
+  </select>
+</div>
+
+<div class="tab active" id="tab-resumen"></div>
+<div class="tab" id="tab-jugadores"></div>
+<div class="tab" id="tab-porteros"></div>
+<div class="tab" id="tab-zonas"></div>
+<div class="tab" id="tab-comparar"></div>
+<div class="tab" id="tab-evolucion"></div>
+
+<div class="modal-back" id="modalBack"><div class="modal" id="modal"></div></div>
+
+<script>
+const S = {"temporada": "2026-27", "equipo": "Agustinos Alicante", "categoria": "Juvenil B", "min_val": 5, "matches": [{"cod": "CAD", "rival": "Cadete", "fecha": "2026-09-25", "jornada": 0, "condicion": "local", "competicion": "Amistoso", "computa": false, "our": 28, "their": 23, "victoria": true, "ht_our": 15, "ht_their": 12, "zones": {"6M": {"gol": 11, "total": 21}, "Extremo": {"gol": 5, "total": 11}, "Contra": {"gol": 7, "total": 8}, "9M": {"gol": 4, "total": 9}, "7M": {"gol": 1, "total": 1}}, "tm_own": 0, "excl_own": 1, "excl_rival": 1, "link": "partidos/CAD.html"}, {"cod": "PRI01", "rival": "Horadada", "fecha": "2026-10-03", "jornada": 1, "condicion": "local", "competicion": "Primera fase", "computa": true, "our": 26, "their": 16, "victoria": true, "ht_our": 13, "ht_their": 8, "zones": {"Contra": {"gol": 12, "total": 16}, "Extremo": {"gol": 6, "total": 19}, "9M": {"gol": 1, "total": 4}, "7M": {"gol": 0, "total": 2}, "6M": {"gol": 7, "total": 12}}, "tm_own": 1, "excl_own": 3, "excl_rival": 3, "link": "partidos/PRI01.html"}, {"cod": "PRI02", "rival": "Santa Pola", "fecha": "2026-10-24", "jornada": 3, "condicion": "local", "competicion": "Primera fase", "computa": true, "our": 37, "their": 25, "victoria": true, "ht_our": 17, "ht_their": 15, "zones": {"6M": {"gol": 14, "total": 16}, "9M": {"gol": 4, "total": 8}, "Contra": {"gol": 13, "total": 16}, "Extremo": {"gol": 6, "total": 9}, "7M": {"gol": 0, "total": 1}}, "tm_own": 2, "excl_own": 0, "excl_rival": 1, "link": "partidos/PRI02.html"}, {"cod": "PRI03", "rival": "Almoradí", "fecha": "2026-10-29", "jornada": 4, "condicion": "local", "competicion": "Primera fase", "computa": true, "our": 32, "their": 16, "victoria": true, "ht_our": 13, "ht_their": 4, "zones": {"Extremo": {"gol": 6, "total": 13}, "6M": {"gol": 9, "total": 18}, "7M": {"gol": 0, "total": 1}, "Contra": {"gol": 15, "total": 20}, "9M": {"gol": 2, "total": 8}}, "tm_own": 0, "excl_own": 2, "excl_rival": 0, "link": "partidos/PRI03.html"}], "players": {"88-DAVID": {"num": "88", "name": "DAVID", "rows": [{"cod": "CAD", "min": 57.55, "goles": 7, "lanz": 13, "asist": 6, "robos": 0, "perd": 1, "bloq": 0, "x1e": 0, "x1f": 3, "faltas": 1, "excl": 0, "val_raw": 20.95, "val_norm": 3.64, "val_min": 57.5}, {"cod": "PRI01", "min": 52.9, "goles": 3, "lanz": 8, "asist": 9, "robos": 0, "perd": 1, "bloq": 0, "x1e": 0, "x1f": 2, "faltas": 2, "excl": 0, "val_raw": 11.76, "val_norm": 2.22, "val_min": 52.9}, {"cod": "PRI02", "min": 59.92, "goles": 7, "lanz": 10, "asist": 6, "robos": 2, "perd": 2, "bloq": 0, "x1e": 3, "x1f": 0, "faltas": 2, "excl": 0, "val_raw": 46.95, "val_norm": 7.84, "val_min": 59.9}, {"cod": "PRI03", "min": 56.4, "goles": 8, "lanz": 15, "asist": 8, "robos": 2, "perd": 3, "bloq": 0, "x1e": 1, "x1f": 1, "faltas": 3, "excl": 0, "val_raw": 37.88, "val_norm": 6.72, "val_min": 56.4}]}, "26-HOYO": {"num": "26", "name": "HOYO", "rows": [{"cod": "CAD", "min": 40.32, "goles": 1, "lanz": 3, "asist": 0, "robos": 0, "perd": 1, "bloq": 0, "x1e": 0, "x1f": 1, "faltas": 5, "excl": 0, "val_raw": -1.01, "val_norm": -0.25, "val_min": 40.3}]}, "21-FELIX": {"num": "21", "name": "FELIX", "rows": [{"cod": "CAD", "min": 36.38, "goles": 5, "lanz": 7, "asist": 2, "robos": 2, "perd": 1, "bloq": 0, "x1e": 0, "x1f": 2, "faltas": 2, "excl": 0, "val_raw": 26.15, "val_norm": 7.19, "val_min": 36.4}]}, "14-ANDRES": {"num": "14", "name": "ANDRES", "rows": [{"cod": "CAD", "min": 43.03, "goles": 5, "lanz": 7, "asist": 0, "robos": 0, "perd": 0, "bloq": 0, "x1e": 0, "x1f": 0, "faltas": 5, "excl": 1, "val_raw": 14.75, "val_norm": 3.43, "val_min": 43.0}, {"cod": "PRI01", "min": 41.3, "goles": 3, "lanz": 4, "asist": 0, "robos": 5, "perd": 0, "bloq": 0, "x1e": 1, "x1f": 1, "faltas": 3, "excl": 1, "val_raw": 24.63, "val_norm": 5.96, "val_min": 41.3}, {"cod": "PRI02", "min": 47.32, "goles": 1, "lanz": 1, "asist": 0, "robos": 3, "perd": 0, "bloq": 0, "x1e": 2, "x1f": 3, "faltas": 7, "excl": 0, "val_raw": 6.6, "val_norm": 1.39, "val_min": 47.3}, {"cod": "PRI03", "min": 45.17, "goles": 1, "lanz": 4, "asist": 1, "robos": 5, "perd": 1, "bloq": 0, "x1e": 0, "x1f": 1, "faltas": 10, "excl": 0, "val_raw": 18.93, "val_norm": 4.19, "val_min": 45.2}]}, "22-ADAN": {"num": "22", "name": "ADAN", "rows": [{"cod": "CAD", "min": 56.52, "goles": 2, "lanz": 4, "asist": 6, "robos": 1, "perd": 2, "bloq": 0, "x1e": 0, "x1f": 2, "faltas": 1, "excl": 0, "val_raw": 9.34, "val_norm": 1.65, "val_min": 56.5}, {"cod": "PRI01", "min": 59.52, "goles": 5, "lanz": 7, "asist": 9, "robos": 6, "perd": 0, "bloq": 0, "x1e": 1, "x1f": 1, "faltas": 1, "excl": 0, "val_raw": 42.29, "val_norm": 7.11, "val_min": 59.5}, {"cod": "PRI02", "min": 59.93, "goles": 7, "lanz": 9, "asist": 9, "robos": 3, "perd": 4, "bloq": 0, "x1e": 1, "x1f": 5, "faltas": 6, "excl": 0, "val_raw": 41.83, "val_norm": 6.98, "val_min": 59.9}, {"cod": "PRI03", "min": 60.0, "goles": 8, "lanz": 12, "asist": 17, "robos": 5, "perd": 0, "bloq": 0, "x1e": 0, "x1f": 7, "faltas": 0, "excl": 0, "val_raw": 39.82, "val_norm": 6.64, "val_min": 60.0}]}, "07-CAPO": {"num": "07", "name": "CAPO", "rows": [{"cod": "CAD", "min": 50.72, "goles": 5, "lanz": 9, "asist": 7, "robos": 0, "perd": 3, "bloq": 0, "x1e": 0, "x1f": 1, "faltas": 0, "excl": 0, "val_raw": 11.36, "val_norm": 2.24, "val_min": 50.7}, {"cod": "PRI01", "min": 33.95, "goles": 1, "lanz": 2, "asist": 9, "robos": 1, "perd": 1, "bloq": 0, "x1e": 1, "x1f": 0, "faltas": 0, "excl": 0, "val_raw": 12.57, "val_norm": 3.7, "val_min": 34.0}, {"cod": "PRI02", "min": 43.92, "goles": 5, "lanz": 7, "asist": 14, "robos": 3, "perd": 4, "bloq": 0, "x1e": 0, "x1f": 1, "faltas": 0, "excl": 0, "val_raw": 35.33, "val_norm": 8.04, "val_min": 43.9}, {"cod": "PRI03", "min": 39.75, "goles": 1, "lanz": 5, "asist": 13, "robos": 2, "perd": 1, "bloq": 0, "x1e": 1, "x1f": 0, "faltas": 0, "excl": 0, "val_raw": 17.33, "val_norm": 4.36, "val_min": 39.8}]}, "04-GUILLE": {"num": "04", "name": "GUILLE", "rows": [{"cod": "CAD", "min": 46.02, "goles": 3, "lanz": 4, "asist": 0, "robos": 0, "perd": 0, "bloq": 0, "x1e": 1, "x1f": 1, "faltas": 0, "excl": 0, "val_raw": 8.15, "val_norm": 1.77, "val_min": 46.0}, {"cod": "PRI01", "min": 39.95, "goles": 5, "lanz": 9, "asist": 1, "robos": 3, "perd": 1, "bloq": 0, "x1e": 3, "x1f": 2, "faltas": 3, "excl": 0, "val_raw": 25.8, "val_norm": 6.46, "val_min": 40.0}]}, "11-TIGRE": {"num": "11", "name": "TIGRE", "rows": [{"cod": "CAD", "min": 28.25, "goles": 0, "lanz": 3, "asist": 1, "robos": 0, "perd": 0, "bloq": 0, "x1e": 0, "x1f": 1, "faltas": 0, "excl": 0, "val_raw": -3.62, "val_norm": -1.28, "val_min": 28.2}, {"cod": "PRI01", "min": 24.35, "goles": 0, "lanz": 8, "asist": 0, "robos": 0, "perd": 0, "bloq": 0, "x1e": 0, "x1f": 1, "faltas": 0, "excl": 0, "val_raw": -7.69, "val_norm": -3.16, "val_min": 24.4}, {"cod": "PRI02", "min": 40.88, "goles": 3, "lanz": 6, "asist": 0, "robos": 0, "perd": 0, "bloq": 0, "x1e": 0, "x1f": 2, "faltas": 0, "excl": 0, "val_raw": 4.01, "val_norm": 0.98, "val_min": 40.9}, {"cod": "PRI03", "min": 53.75, "goles": 1, "lanz": 6, "asist": 0, "robos": 1, "perd": 0, "bloq": 0, "x1e": 0, "x1f": 1, "faltas": 1, "excl": 0, "val_raw": 0.12, "val_norm": 0.02, "val_min": 53.8}]}, "20-FELIX": {"num": "20", "name": "FELIX", "rows": [{"cod": "PRI01", "min": 59.52, "goles": 6, "lanz": 10, "asist": 2, "robos": 2, "perd": 0, "bloq": 0, "x1e": 0, "x1f": 0, "faltas": 1, "excl": 0, "val_raw": 27.0, "val_norm": 4.54, "val_min": 59.5}, {"cod": "PRI02", "min": 59.9, "goles": 6, "lanz": 9, "asist": 1, "robos": 0, "perd": 5, "bloq": 0, "x1e": 0, "x1f": 0, "faltas": 2, "excl": 0, "val_raw": 9.59, "val_norm": 1.6, "val_min": 59.9}, {"cod": "PRI03", "min": 53.72, "goles": 9, "lanz": 12, "asist": 0, "robos": 0, "perd": 1, "bloq": 0, "x1e": 3, "x1f": 1, "faltas": 1, "excl": 1, "val_raw": 27.73, "val_norm": 5.16, "val_min": 53.7}]}, "02-HOYO": {"num": "02", "name": "HOYO", "rows": [{"cod": "PRI01", "min": 43.42, "goles": 3, "lanz": 5, "asist": 0, "robos": 2, "perd": 1, "bloq": 0, "x1e": 1, "x1f": 2, "faltas": 5, "excl": 2, "val_raw": 8.69, "val_norm": 2.0, "val_min": 43.4}, {"cod": "PRI02", "min": 50.63, "goles": 8, "lanz": 8, "asist": 1, "robos": 1, "perd": 1, "bloq": 1, "x1e": 5, "x1f": 3, "faltas": 7, "excl": 0, "val_raw": 37.89, "val_norm": 7.48, "val_min": 50.6}, {"cod": "PRI03", "min": 48.72, "goles": 4, "lanz": 6, "asist": 2, "robos": 0, "perd": 1, "bloq": 0, "x1e": 0, "x1f": 1, "faltas": 9, "excl": 1, "val_raw": 16.28, "val_norm": 3.34, "val_min": 48.7}]}}, "gks": {"25-SEIDEL": {"num": "25", "name": "SEIDEL", "rows": [{"cod": "CAD", "min": 13.57, "paradas": 4, "total": 13, "zones": {"6M": {"paradas": 2, "total": 5}, "Contra": {"paradas": 2, "total": 5}, "Extremo": {"paradas": 0, "total": 3}}}, {"cod": "PRI01", "min": 32.43, "paradas": 6, "total": 17, "zones": {"6M": {"paradas": 2, "total": 7}, "Extremo": {"paradas": 3, "total": 5}, "9M": {"paradas": 1, "total": 4}, "Contra": {"paradas": 0, "total": 1}}}, {"cod": "PRI02", "min": 30.62, "paradas": 5, "total": 19, "zones": {"Extremo": {"paradas": 1, "total": 4}, "Contra": {"paradas": 0, "total": 4}, "9M": {"paradas": 2, "total": 2}, "6M": {"paradas": 1, "total": 7}, "7M": {"paradas": 1, "total": 2}}}, {"cod": "PRI03", "min": 3.75, "paradas": 1, "total": 4, "zones": {"7M": {"paradas": 1, "total": 4}}}]}, "96-ADRI": {"num": "96", "name": "ADRI", "rows": [{"cod": "CAD", "min": 41.95, "paradas": 11, "total": 25, "zones": {"Extremo": {"paradas": 4, "total": 7}, "6M": {"paradas": 5, "total": 11}, "Contra": {"paradas": 1, "total": 6}, "7M": {"paradas": 1, "total": 1}}}, {"cod": "PRI01", "min": 23.37, "paradas": 2, "total": 5, "zones": {"Extremo": {"paradas": 1, "total": 1}, "6M": {"paradas": 1, "total": 4}}}, {"cod": "PRI02", "min": 26.17, "paradas": 2, "total": 13, "zones": {"7M": {"paradas": 0, "total": 2}, "Extremo": {"paradas": 0, "total": 2}, "Contra": {"paradas": 1, "total": 4}, "6M": {"paradas": 1, "total": 5}}}, {"cod": "PRI03", "min": 24.3, "paradas": 7, "total": 10, "zones": {"6M": {"paradas": 4, "total": 6}, "Extremo": {"paradas": 0, "total": 1}, "9M": {"paradas": 3, "total": 3}}}]}, "01-QUICO": {"num": "01", "name": "QUICO", "rows": [{"cod": "PRI01", "min": 1.5, "paradas": 1, "total": 3, "zones": {"7M": {"paradas": 1, "total": 3}}}, {"cod": "PRI03", "min": 29.77, "paradas": 8, "total": 18, "zones": {"9M": {"paradas": 1, "total": 4}, "6M": {"paradas": 3, "total": 9}, "Extremo": {"paradas": 2, "total": 2}, "Contra": {"paradas": 2, "total": 3}}}]}}};
+const ZONES = ['6M','9M','Extremo','Contra','7M'];
+const ZLABEL = {'6M':'6 metros','9M':'9 metros','Extremo':'Extremos','Contra':'Contraataque','7M':'7 metros'};
+const state = {comp:'all', cond:'all', sub:'atk', sortKey:'val', sortDir:-1, gk:'TODOS'};
+
+const byCod = {}; S.matches.forEach(m => byCod[m.cod] = m);
+const pct = (a,b) => b ? Math.round(100*a/b) : null;
+const pctTxt = (a,b) => b ? pct(a,b)+'%' : '–';
+const mmss = m => { const s=Math.round(m*60); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const col = p => p===null ? 'var(--muted)' : p>=60?'var(--green)':p>=40?'var(--gold)':'var(--red)';
+function fdate(f){ if(!f) return ''; const [y,m,d]=f.split('-'); return d+'/'+m; }
+
+function okMatch(m){
+  if(!m.computa) return false;
+  if(state.comp!=='all' && m.competicion!==state.comp) return false;
+  if(state.cond!=='all' && m.condicion!==state.cond) return false;
+  return true;
+}
+const F = () => S.matches.filter(okMatch);
+const okCods = () => new Set(F().map(m=>m.cod));
+
+// ---------- header + filters
+document.getElementById('eyebrow').textContent = S.temporada ? 'Temporada '+S.temporada : '';
+document.getElementById('title').innerHTML = S.equipo+' <span>'+S.categoria+'</span>';
+(function(){
+  const comps = [...new Set(S.matches.map(m=>m.competicion).filter(Boolean))];
+  const sel = document.getElementById('fComp');
+  sel.innerHTML = '<option value="all">Todas las competiciones</option>' +
+    comps.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
+})();
+
+// ---------- RESUMEN
+function renderResumen(){
+  const ms = F();
+  const pj = ms.length;
+  const v = ms.filter(m=>m.our>m.their).length;
+  const e = ms.filter(m=>m.our===m.their).length;
+  const d = pj-v-e;
+  const gf = ms.reduce((a,m)=>a+m.our,0), gc = ms.reduce((a,m)=>a+m.their,0);
+  const dif = gf-gc;
+  const avg = n => pj ? (n/pj).toFixed(1) : '–';
+  const ht = ms.reduce((a,m)=>a+(m.ht_our-m.ht_their),0);
+  const st = dif-ht;
+  const sg = n => (n>0?'+':'')+n;
+  let h = '<div class="section"><div class="section-title">Balance</div><div class="kpi-grid">'
+    + '<div class="kpi"><b>'+pj+'</b><small>Jugados</small></div>'
+    + '<div class="kpi"><b>'+v+'-'+e+'-'+d+'</b><small>V · E · D</small></div>'
+    + '<div class="kpi"><b class="'+(dif>0?'pos':dif<0?'neg':'')+'">'+sg(dif)+'</b><small>Diferencia</small></div>'
+    + '<div class="kpi"><b>'+gf+'</b><small>Goles a favor</small></div>'
+    + '<div class="kpi"><b>'+gc+'</b><small>Goles en contra</small></div>'
+    + '<div class="kpi"><b>'+avg(gf)+' / '+avg(gc)+'</b><small>Media GF / GC</small></div>'
+    + '<div class="kpi"><b class="'+(ht>0?'pos':ht<0?'neg':'')+'">'+sg(ht)+'</b><small>1ª parte</small></div>'
+    + '<div class="kpi"><b class="'+(st>0?'pos':st<0?'neg':'')+'">'+sg(st)+'</b><small>2ª parte</small></div>'
+    + '<div class="kpi"><b>'+ms.reduce((a,m)=>a+m.excl_own,0)+' / '+ms.reduce((a,m)=>a+m.excl_rival,0)+'</b><small>Excl. propias / rival</small></div>'
+    + '</div></div>';
+  h += '<div class="section"><div class="section-title">Partidos</div>';
+  if(!S.matches.length) h += '<div class="empty">Sin partidos</div>';
+  const list = S.matches.slice().reverse();
+  list.forEach(m => {
+    const r = m.our>m.their?'V':m.our<m.their?'D':'E';
+    const off = (!okMatch(m)) ? ' off' : '';
+    const sub = [m.fecha?fdate(m.fecha):'', m.jornada?('J'+m.jornada):'', m.competicion, m.condicion, m.computa?'':'no computa']
+      .filter(Boolean).join(' · ');
+    h += '<a class="match'+off+'" href="'+m.link+'"><div class="badge '+r+'">'+r+'</div>'
+      + '<div class="m-main"><div class="m-rival">'+esc(m.rival)+'</div><div class="m-sub">'+esc(sub)+'</div></div>'
+      + '<div class="m-score">'+m.our+'–'+m.their+'</div><div class="m-arrow">›</div></a>';
+  });
+  h += '</div>';
+  document.getElementById('tab-resumen').innerHTML = h;
+}
+
+// ---------- JUGADORES
+function aggPlayer(p){
+  const cods = okCods();
+  const rows = p.rows.filter(r=>cods.has(r.cod));
+  if(!rows.length) return null;
+  const sum = k => rows.reduce((a,r)=>a+(r[k]||0),0);
+  const vr = rows.filter(r=>r.val_norm!==null);
+  const vmin = vr.reduce((a,r)=>a+r.val_min,0);
+  const vraw = vr.reduce((a,r)=>a+r.val_raw,0);
+  return {
+    p, rows, pj: rows.length, min: sum('min'), goles: sum('goles'), lanz: sum('lanz'),
+    asist: sum('asist'), robos: sum('robos'), perd: sum('perd'), bloq: sum('bloq'),
+    x1e: sum('x1e'), x1f: sum('x1f'), faltas: sum('faltas'), excl: sum('excl'),
+    efic: sum('lanz') ? sum('goles')/sum('lanz') : -1,
+    val: vmin ? vraw/vmin*10 : -99
+  };
+}
+const COLS = {
+  atk: [['pj','PJ'],['min','Min'],['goles','G'],['lanz','L'],['efic','%'],['asist','As'],['perd','Pér'],['val','VAL']],
+  def: [['pj','PJ'],['min','Min'],['robos','Rob'],['bloq','Blq'],['x1e','1x1+'],['x1f','1x1−'],['faltas','Flt'],['excl','Exc']]
+};
+function cell(a,k){
+  if(k==='min') return mmss(a.min);
+  if(k==='efic') return a.efic<0?'–':Math.round(a.efic*100)+'%';
+  if(k==='val') return a.val===-99?'–':'<span class="val">'+a.val.toFixed(1)+'</span>';
+  return a[k];
+}
+function renderJug(){
+  const cols = COLS[state.sub];
+  if(!cols.some(c=>c[0]===state.sortKey)) { state.sortKey = state.sub==='atk'?'val':'min'; state.sortDir=-1; }
+  let data = Object.values(S.players).map(aggPlayer).filter(Boolean);
+  data.sort((a,b)=> (a[state.sortKey]-b[state.sortKey])*state.sortDir);
+  let h = '<div class="section"><div class="subtabs">'
+    + '<div class="subtab '+(state.sub==='atk'?'active':'')+'" data-sub="atk">Ataque</div>'
+    + '<div class="subtab '+(state.sub==='def'?'active':'')+'" data-sub="def">Defensa</div></div>';
+  if(!data.length){ document.getElementById('tab-jugadores').innerHTML = h+'<div class="empty">Sin datos con estos filtros</div></div>'; return; }
+  h += '<div class="tbl-wrap"><table><thead><tr><th data-k="name">Jugador</th>'
+    + cols.map(c=>'<th data-k="'+c[0]+'" class="'+(state.sortKey===c[0]?'sorted':'')+'">'+c[1]+(state.sortKey===c[0]?(state.sortDir>0?' ▲':' ▼'):'')+'</th>').join('')
+    + '</tr></thead><tbody>';
+  data.forEach(a=>{
+    h += '<tr class="prow" data-p="'+esc(a.p.num+'-'+a.p.name)+'"><td><span class="pn">'+a.p.num+'</span>'+esc(a.p.name)+'</td>'
+      + cols.map(c=>'<td>'+cell(a,c[0])+'</td>').join('')+'</tr>';
+  });
+  h += '</tbody></table></div><div class="hint">Pulsa la cabecera para ordenar · pulsa un jugador para ver su evolución. '
+    + 'VAL = valoración media por 10 min (mín. '+S.min_val+' min por partido). Porteros excluidos.</div></div>';
+  document.getElementById('tab-jugadores').innerHTML = h;
+}
+function teamVal(){
+  const cods = okCods(); let vr=0, vm=0;
+  Object.values(S.players).forEach(p=>p.rows.forEach(r=>{ if(cods.has(r.cod) && r.val_norm!==null){ vr+=r.val_raw; vm+=r.val_min; } }));
+  return vm ? vr/vm*10 : null;
+}
+function signedBars(labels, vals, lines){
+  const W=440, H=190, L=30, R=10, T=18, B=28;
+  const nums = vals.filter(v=>v!==null).concat(lines.map(l=>l.v).filter(v=>v!==null), [0]);
+  let mn=Math.min(...nums), mx=Math.max(...nums);
+  const pad=(mx-mn)*0.12||1; mn-=pad; mx+=pad;
+  const y = v => T + (H-T-B)*(1-(v-mn)/(mx-mn));
+  const n=labels.length, slot=(W-L-R)/n, bw=Math.min(40, slot*0.55);
+  let g='';
+  const ticks=4;
+  for(let k=0;k<=ticks;k++){ const v=mn+(mx-mn)*k/ticks;
+    g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="rgba(255,255,255,.06)"/><text x="'+(L-4)+'" y="'+(y(v)+3)+'" text-anchor="end" font-size="9" fill="#8899b0">'+v.toFixed(0)+'</text>'; }
+  g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(0)+'" y2="'+y(0)+'" stroke="rgba(255,255,255,.35)" stroke-width="1.2"/>';
+  vals.forEach((v,i)=>{
+    const cx=L+slot*i+slot/2;
+    if(v===null){ g+='<text x="'+cx+'" y="'+(y(0)-4)+'" text-anchor="middle" font-size="10" fill="#8899b0">–</text>'; }
+    else {
+      const y0=y(0), y1=y(v), top=Math.min(y0,y1), h=Math.max(2,Math.abs(y1-y0));
+      const c = v>=0 ? '#f0a500' : '#e74c3c';
+      g+='<rect x="'+(cx-bw/2)+'" y="'+top+'" width="'+bw+'" height="'+h+'" rx="3" fill="'+c+'" opacity=".9"/>'
+        +'<text x="'+cx+'" y="'+(v>=0? top-4 : top+h+11)+'" text-anchor="middle" font-size="10" font-weight="700" fill="'+(v>=0?'#ffc740':'#ff8a7d')+'">'+v.toFixed(1)+'</text>';
+    }
+    g+='<text x="'+cx+'" y="'+(H-10)+'" text-anchor="middle" font-size="9" fill="#8899b0">'+esc(labels[i])+'</text>';
+  });
+  lines.forEach(l=>{ if(l.v===null) return;
+    g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(l.v)+'" y2="'+y(l.v)+'" stroke="'+l.color+'" stroke-width="1.8" stroke-dasharray="6 4"/>'; });
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%">'+g+'</svg>';
+}
+function openPlayer(key){
+  const p = S.players[key]; if(!p) return;
+  const a = aggPlayer(p);
+  const rows = p.rows.filter(r=>okCods().has(r.cod));
+  const tv = teamVal();
+  const f1 = v => v===null||v===-99 ? '–' : v.toFixed(1);
+  let h = '<span class="close" id="mClose">×</span><h3>#'+p.num+' '+esc(p.name)+'</h3>'
+    + '<div class="sub">'+rows.length+' partidos · '+mmss(a.min)+' min totales · <b>'+mmss(a.min/rows.length)+'</b> de media por partido</div>'
+    + '<div class="kpi-grid" style="margin-bottom:6px">'
+    + '<div class="kpi"><b>'+f1(a.val)+'</b><small>VAL medio jugador</small></div>'
+    + '<div class="kpi"><b style="color:var(--blue)">'+f1(tv)+'</b><small>VAL medio equipo</small></div>'
+    + '<div class="kpi"><b class="'+(a.val!==-99&&tv!==null?(a.val>=tv?'pos':'neg'):'')+'">'+(a.val!==-99&&tv!==null?((a.val-tv>0?'+':'')+(a.val-tv).toFixed(1)):'–')+'</b><small>vs equipo</small></div></div>';
+  h += '<div class="section-title" style="margin-top:14px">VAL/10 por partido</div><div class="chart">'
+    + signedBars(rows.map(r=>byCod[r.cod].rival.slice(0,7)), rows.map(r=>r.val_norm),
+        [{v:a.val===-99?null:a.val, color:'#ffffff'},{v:tv, color:'#3a8fd1'}])
+    + '<div class="legend"><span><i style="background:#f0a500"></i>Partido</span>'
+    + '<span><i style="background:#fff"></i>Media jugador '+f1(a.val)+'</span>'
+    + '<span><i style="background:#3a8fd1"></i>Media equipo '+f1(tv)+'</span></div></div>';
+  h += '<div class="tbl-wrap"><table><thead><tr><th>Partido</th><th>Min</th><th>G/L</th><th>As</th><th>Rob</th><th>Pér</th><th>VAL</th></tr></thead><tbody>'
+    + rows.map(r=>{ const m=byCod[r.cod];
+        return '<tr><td>'+esc(m.rival)+'</td><td>'+mmss(r.min)+'</td><td>'+r.goles+'/'+r.lanz+'</td><td>'+r.asist+'</td><td>'+r.robos+'</td><td>'+r.perd+'</td><td>'+(r.val_norm===null?'–':'<span class="val" style="'+(r.val_norm<0?'color:var(--red)':'')+'">'+r.val_norm.toFixed(1)+'</span>')+'</td></tr>';
+      }).join('')+'</tbody></table></div>'
+    + '<div class="hint">Las líneas discontinuas son la media de la temporada (con los filtros activos). Las barras por encima de la línea son partidos mejores que su media. Sin valoración si jugó menos de '+S.min_val+' min.</div>';
+  document.getElementById('modal').innerHTML = h;
+  document.getElementById('modalBack').classList.add('open');
+}
+
+// ---------- PORTEROS
+function aggGK(keys){
+  const cods = okCods();
+  const out = {min:0, paradas:0, total:0, zones:{}, rows:[]};
+  keys.forEach(k=>{
+    S.gks[k].rows.filter(r=>cods.has(r.cod)).forEach(r=>{
+      out.min += r.min; out.paradas += r.paradas; out.total += r.total;
+      out.rows.push(Object.assign({k:k}, r));
+      Object.entries(r.zones).forEach(([z,v])=>{
+        out.zones[z] = out.zones[z] || {paradas:0,total:0};
+        out.zones[z].paradas += v.paradas; out.zones[z].total += v.total;
+      });
+    });
+  });
+  return out;
+}
+function renderPorteros(){
+  const keys = Object.keys(S.gks).sort((a,b)=>{
+    const ta = aggGK([a]).total, tb = aggGK([b]).total; return tb-ta;
+  });
+  if(!keys.length){ document.getElementById('tab-porteros').innerHTML='<div class="empty">Sin porteros</div>'; return; }
+  const sel = state.gk==='TODOS' || S.gks[state.gk] ? state.gk : 'TODOS';
+  const use = sel==='TODOS' ? keys : [sel];
+  const a = aggGK(use);
+  let h = '<div class="section"><div class="chips">'
+    + ['TODOS'].concat(keys).map(k=>'<div class="chip '+(k===sel?'active':'')+'" data-gk="'+esc(k)+'">'
+        + (k==='TODOS'?'Todos':'#'+S.gks[k].num+' '+esc(S.gks[k].name))+'</div>').join('')
+    + '</div>';
+  const pc = pct(a.paradas, a.total);
+  h += '<div class="gk-big"><div class="pct" style="color:'+col(pc)+'">'+(pc===null?'–':pc+'%')+'</div>'
+    + '<div class="d">'+a.paradas+' paradas de '+a.total+' tiros<br>⏱ '+mmss(a.min)+' en pista<br>'
+    + (a.min>0 ? (a.total/a.min*10).toFixed(1)+' tiros / 10 min' : '')+'</div></div>';
+  h += '<div class="section-title">Por zona</div>';
+  ZONES.forEach(z=>{
+    const v = a.zones[z] || {paradas:0,total:0};
+    const p = pct(v.paradas, v.total);
+    h += '<div class="zrow"><div class="zhead"><span>'+ZLABEL[z]+'</span><span>'+v.paradas+'/'+v.total+' · <b>'+(p===null?'–':p+'%')+'</b></span></div>'
+      + '<div class="zbar"><i style="width:'+(p||0)+'%;background:'+col(p)+'"></i></div></div>';
+  });
+  h += '<div class="section-title" style="margin-top:18px">Por partido</div><div class="tbl-wrap"><table><thead><tr><th>Partido</th>'
+    + (sel==='TODOS'?'<th>Port.</th>':'')+'<th>Min</th><th>Par/Tiros</th><th>%</th></tr></thead><tbody>'
+    + a.rows.map(r=>{ const m=byCod[r.cod]; const p=pct(r.paradas,r.total);
+        return '<tr><td>'+esc(m.rival)+'</td>'+(sel==='TODOS'?'<td>#'+S.gks[r.k].num+'</td>':'')
+          +'<td>'+mmss(r.min)+'</td><td>'+r.paradas+'/'+r.total+'</td><td style="color:'+col(p)+'">'+(p===null?'–':p+'%')+'</td></tr>';
+      }).join('')+'</tbody></table></div>'
+    + '<div class="hint">Los lanzamientos rivales que salen fuera no cuentan para el porcentaje.</div></div>';
+  document.getElementById('tab-porteros').innerHTML = h;
+}
+
+// ---------- ZONAS (ataque equipo)
+function renderZonas(){
+  const ms = F();
+  const z = {};
+  ms.forEach(m=>Object.entries(m.zones).forEach(([k,v])=>{
+    z[k] = z[k]||{gol:0,total:0}; z[k].gol+=v.gol; z[k].total+=v.total; }));
+  const tg = Object.values(z).reduce((a,v)=>a+v.gol,0), tt = Object.values(z).reduce((a,v)=>a+v.total,0);
+  let h = '<div class="section"><div class="section-title">Eficacia de ataque por zona</div>';
+  if(!tt){ document.getElementById('tab-zonas').innerHTML = h+'<div class="empty">Sin datos con estos filtros</div></div>'; return; }
+  h += '<div class="gk-big"><div class="pct" style="color:'+col(pct(tg,tt))+'">'+pctTxt(tg,tt)+'</div>'
+    + '<div class="d">'+tg+' goles de '+tt+' lanzamientos<br>'+ms.length+' partidos</div></div>';
+  ZONES.forEach(k=>{
+    const v = z[k]||{gol:0,total:0}; const p = pct(v.gol,v.total);
+    h += '<div class="zrow"><div class="zhead"><span>'+ZLABEL[k]+'</span><span>'+v.gol+'/'+v.total+' · <b>'+(p===null?'–':p+'%')+'</b></span></div>'
+      + '<div class="zbar"><i style="width:'+(p||0)+'%;background:'+col(p)+'"></i></div></div>';
+  });
+  h += '</div>';
+  document.getElementById('tab-zonas').innerHTML = h;
+}
+
+
+// ---------- helpers de series
+const PCOL = ['#f0a500','#3a8fd1','#2ecc71'];
+function teamSeries(){
+  const ms = F();
+  const cods = ms.map(m=>m.cod);
+  const val = cods.map(c=>{
+    let vr=0, vm=0;
+    Object.values(S.players).forEach(p=>p.rows.forEach(r=>{ if(r.cod===c && r.val_norm!==null){ vr+=r.val_raw; vm+=r.val_min; } }));
+    return vm ? vr/vm*10 : null;
+  });
+  const efic = ms.map(m=>{ let g=0,t=0; Object.values(m.zones).forEach(z=>{g+=z.gol;t+=z.total}); return t? 100*g/t : null; });
+  const par = cods.map(c=>{ let a=0,b=0; Object.values(S.gks).forEach(k=>k.rows.forEach(r=>{ if(r.cod===c){a+=r.paradas;b+=r.total;} })); return b? 100*a/b : null; });
+  return {ms, val, efic, par};
+}
+function lineChart(labels, series, opts){
+  const W=440, H=150, L=30, R=12, T=14, B=26;
+  const all = series.flatMap(s=>s.data).filter(v=>v!==null);
+  if(!all.length) return '<div class="empty">Sin datos</div>';
+  let mn = opts.min!==undefined? opts.min : Math.min(...all), mx = opts.max!==undefined? opts.max : Math.max(...all);
+  if(mx===mn){ mx+=1; mn-=1; }
+  const pad=(mx-mn)*0.1; if(opts.min===undefined) mn-=pad; if(opts.max===undefined) mx+=pad;
+  const n = labels.length;
+  const x = i => n===1 ? (L+W-R)/2 : L + i*(W-L-R)/(n-1);
+  const y = v => T + (H-T-B)*(1-(v-mn)/(mx-mn));
+  let g='';
+  for(let k=0;k<=3;k++){ const v=mn+(mx-mn)*k/3; g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="rgba(255,255,255,.07)"/><text x="'+(L-4)+'" y="'+(y(v)+3)+'" text-anchor="end" font-size="9" fill="#8899b0">'+(opts.fmt?opts.fmt(v):Math.round(v))+'</text>'; }
+  labels.forEach((l,i)=>{ g+='<text x="'+x(i)+'" y="'+(H-8)+'" text-anchor="middle" font-size="9" fill="#8899b0">'+esc(l)+'</text>'; });
+  series.forEach(s=>{
+    let d='', pts='';
+    s.data.forEach((v,i)=>{ if(v===null) return; d+=(d?'L':'M')+x(i)+' '+y(v)+' '; pts+='<circle cx="'+x(i)+'" cy="'+y(v)+'" r="3.5" fill="'+s.color+'"/><text x="'+x(i)+'" y="'+(y(v)-7)+'" text-anchor="middle" font-size="9" fill="'+s.color+'">'+(opts.fmt?opts.fmt(v):Math.round(v))+'</text>'; });
+    g+='<path d="'+d+'" fill="none" stroke="'+s.color+'" stroke-width="2"/>'+pts;
+  });
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%">'+g+'</svg>';
+}
+function barsChart(labels, a, b){
+  const W=440, H=150, L=28, R=8, T=14, B=26;
+  const n=labels.length; const mx=Math.max(1,...a,...b);
+  const slot=(W-L-R)/n, bw=Math.min(26, slot/2.6);
+  const y=v=>T+(H-T-B)*(1-v/mx);
+  let g='';
+  for(let k=0;k<=3;k++){ const v=Math.round(mx*k/3); g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="rgba(255,255,255,.07)"/><text x="'+(L-4)+'" y="'+(y(v)+3)+'" text-anchor="end" font-size="9" fill="#8899b0">'+v+'</text>'; }
+  labels.forEach((l,i)=>{
+    const cx=L+slot*i+slot/2;
+    g+='<rect x="'+(cx-bw-1)+'" y="'+y(a[i])+'" width="'+bw+'" height="'+(H-B-y(a[i]))+'" rx="3" fill="#f0a500"/><text x="'+(cx-bw/2-1)+'" y="'+(y(a[i])-3)+'" text-anchor="middle" font-size="9" fill="#ffc740">'+a[i]+'</text>'
+      +'<rect x="'+(cx+1)+'" y="'+y(b[i])+'" width="'+bw+'" height="'+(H-B-y(b[i]))+'" rx="3" fill="#3a8fd1"/><text x="'+(cx+bw/2+1)+'" y="'+(y(b[i])-3)+'" text-anchor="middle" font-size="9" fill="#8bbbe3">'+b[i]+'</text>'
+      +'<text x="'+cx+'" y="'+(H-8)+'" text-anchor="middle" font-size="9" fill="#8899b0">'+esc(l)+'</text>';
+  });
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%">'+g+'</svg>';
+}
+
+// ---------- EVOLUCIÓN
+function renderEvolucion(){
+  const t = teamSeries();
+  const el = document.getElementById('tab-evolucion');
+  if(!t.ms.length){ el.innerHTML='<div class="empty">Sin partidos con estos filtros</div>'; return; }
+  const labels = t.ms.map(m=>m.rival.slice(0,7));
+  let h = '<div class="section"><div class="section-title">Evolución del equipo</div>'
+    + '<div class="chart"><h4>Goles por partido</h4>'+barsChart(labels, t.ms.map(m=>m.our), t.ms.map(m=>m.their))
+    + '<div class="legend"><span><i style="background:#f0a500"></i>A favor</span><span><i style="background:#3a8fd1"></i>En contra</span></div></div>'
+    + '<div class="chart"><h4>Eficacia de ataque (%)</h4>'+lineChart(labels,[{data:t.efic,color:'#f0a500'}],{min:0,max:100})+'</div>'
+    + '<div class="chart"><h4>Valoración media del equipo (VAL/10 min)</h4>'+lineChart(labels,[{data:t.val,color:'#2ecc71'}],{fmt:v=>v.toFixed(1)})+'</div>'
+    + '<div class="chart"><h4>% paradas de porteros</h4>'+lineChart(labels,[{data:t.par,color:'#3a8fd1'}],{min:0,max:100})+'</div>'
+    + '<div class="hint">Partidos en orden cronológico. Respetan los filtros de arriba.</div></div>';
+  el.innerHTML = h;
+}
+
+// ---------- COMPARAR
+const MET = [
+  ['pj','Partidos',a=>a.pj,true], ['min','Minutos',a=>mmss(a.min),true],
+  ['goles','Goles',a=>a.goles,true], ['g10','Goles / 10 min',a=>a.min?(a.goles/a.min*10).toFixed(1):'–',true],
+  ['efic','Eficacia lanzamiento',a=>a.efic<0?'–':Math.round(a.efic*100)+'%',true],
+  ['asist','Asistencias',a=>a.asist,true], ['a10','Asist. / 10 min',a=>a.min?(a.asist/a.min*10).toFixed(1):'–',true],
+  ['robos','Robos',a=>a.robos,true], ['perd','Pérdidas',a=>a.perd,false],
+  ['x1e','1x1 def. éxito',a=>a.x1e,true], ['faltas','Faltas',a=>a.faltas,false], ['excl','Exclusiones',a=>a.excl,false],
+  ['val','VAL / 10 min',a=>a.val===-99?'–':a.val.toFixed(1),true]
+];
+function metVal(a,k){
+  if(k==='g10') return a.min? a.goles/a.min*10 : -1;
+  if(k==='a10') return a.min? a.asist/a.min*10 : -1;
+  return a[k];
+}
+function renderComparar(){
+  const el = document.getElementById('tab-comparar');
+  const all = Object.keys(S.players).map(k=>({k, a:aggPlayer(S.players[k])})).filter(x=>x.a);
+  state.cmp = (state.cmp||[]).filter(k=>all.some(x=>x.k===k));
+  if(!state.cmp.length) state.cmp = all.slice().sort((x,y)=>y.a.val-x.a.val).slice(0,2).map(x=>x.k);
+  let h = '<div class="section"><div class="section-title">Comparar jugadores</div>'
+    + '<div class="chips">' + all.map(x=>{ const i=state.cmp.indexOf(x.k);
+        return '<div class="chip '+(i>=0?'active':'')+'" data-cmp="'+esc(x.k)+'"'+(i>=0?' style="border-color:'+PCOL[i]+';color:'+PCOL[i]+'"':'')+'>#'+S.players[x.k].num+' '+esc(S.players[x.k].name)+'</div>';
+      }).join('') + '</div><div class="hint" style="margin-top:-6px">Elige hasta 3 jugadores.</div>';
+  const sel = state.cmp.map(k=>({k, a:aggPlayer(S.players[k]), p:S.players[k]}));
+  if(sel.length<2){ el.innerHTML = h+'<div class="empty">Elige al menos 2 jugadores</div></div>'; return; }
+  const n = sel.length;
+  const cols = 'repeat('+n+',1fr)';
+  h += '<div class="cmp-head" style="grid-template-columns:'+cols+'">'
+    + sel.map((s,i)=>'<div style="border-color:'+PCOL[i]+';color:'+PCOL[i]+'">#'+s.p.num+' '+esc(s.p.name)+'</div>').join('')+'</div>';
+  MET.forEach(m=>{
+    const vals = sel.map(s=>metVal(s.a,m[0]));
+    const valid = vals.filter(v=>v!==-1 && v!==-99);
+    const best = valid.length ? (m[3] ? Math.max(...valid) : Math.min(...valid)) : null;
+    h += '<div class="cmp-row" style="grid-template-columns:'+cols+'"><div class="cmp-lab">'+m[1]+'</div>'
+      + sel.map((s,i)=>{ const v=vals[i]; const isBest = best!==null && v===best && valid.length>1 && new Set(valid).size>1;
+          return '<div class="cmp-cell'+(isBest?' best':'')+'">'+m[2](s.a)+'</div>'; }).join('')+'</div>';
+  });
+  // evolución VAL por partido
+  const ms = F();
+  h += '<div class="section-title" style="margin-top:20px">VAL/10 por partido</div><div class="chart">'
+    + lineChart(ms.map(m=>m.rival.slice(0,7)), sel.map((s,i)=>({color:PCOL[i], data: ms.map(m=>{ const r=s.p.rows.find(r=>r.cod===m.cod); return r && r.val_norm!==null ? r.val_norm : null; })})), {fmt:v=>v.toFixed(1)})
+    + '<div class="legend">'+sel.map((s,i)=>'<span><i style="background:'+PCOL[i]+'"></i>'+esc(s.p.name)+'</span>').join('')+'</div></div>'
+    + '<div class="hint">Resaltado = mejor valor del grupo (en pérdidas, faltas y exclusiones, el menor). Respeta los filtros.</div></div>';
+  el.innerHTML = h;
+}
+
+// ---------- wiring
+function renderAll(){ renderResumen(); renderJug(); renderComparar(); renderPorteros(); renderZonas(); renderEvolucion(); }
+document.getElementById('nav').addEventListener('click', e=>{
+  const n = e.target.closest('.nav-item'); if(!n) return;
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active', x===n));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.id==='tab-'+n.dataset.tab));
+});
+document.getElementById('fComp').addEventListener('change', e=>{ state.comp=e.target.value; renderAll(); });
+document.getElementById('fCond').addEventListener('change', e=>{ state.cond=e.target.value; renderAll(); });
+document.addEventListener('click', e=>{
+  const sub = e.target.closest('.subtab'); if(sub){ state.sub=sub.dataset.sub; renderJug(); return; }
+  const th = e.target.closest('#tab-jugadores th'); if(th && th.dataset.k && th.dataset.k!=='name'){
+    if(state.sortKey===th.dataset.k) state.sortDir*=-1; else { state.sortKey=th.dataset.k; state.sortDir=-1; }
+    renderJug(); return; }
+  const pr = e.target.closest('tr.prow'); if(pr){ openPlayer(pr.dataset.p); return; }
+  const cc = e.target.closest('.chip[data-cmp]'); if(cc){
+    const k=cc.dataset.cmp; const i=(state.cmp||[]).indexOf(k);
+    if(i>=0) state.cmp.splice(i,1); else { state.cmp=(state.cmp||[]).concat(k).slice(-3); }
+    renderComparar(); return; }
+  const chip = e.target.closest('.chip[data-gk]'); if(chip){ state.gk=chip.dataset.gk; renderPorteros(); return; }
+  if(e.target.id==='modalBack' || e.target.id==='mClose') document.getElementById('modalBack').classList.remove('open');
+});
+renderAll();
+</script>
+</body>
+</html>
